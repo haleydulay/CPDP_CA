@@ -10,15 +10,14 @@ public:
 	SquareGrid(sf::RenderWindow* window, int width, int height, sf::Color* colors);
 	~SquareGrid();
 
-	int getIntFromGrid(int x, int y);
-	void setIntToGrid(int value, int x, int y);
+	int getCellState(int x, int y);
+	void setCellState(int state, int x, int y);
+
+	void getMooreNeighborhood(int neighborhood[13], int x, int y, bool shouldLoopHorizontally, bool shouldLoopVertically);
+	void getVonNeumannNeighborhood(int neighborhood[13], int x, int y, bool shouldLoopHorizontally, bool shouldLoopVertically);
 
 	void draw();
 
 private:
-	const int WIDTH;			//width of grid in squares
-	const int HEIGHT;			//height of grid in squares
-	sf::Color* const COLORS;	//array of colors that maps cell state to color
-	
 	sf::RectangleShape*** image;	//2D array of cell images
 };

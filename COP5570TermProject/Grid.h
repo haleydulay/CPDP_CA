@@ -8,15 +8,26 @@
 class Grid
 {
 public:
-	Grid(sf::RenderWindow* window);
+	const int WIDTH;	//width of grid in cells
+	const int HEIGHT;	//height of grid in cells
 
-	virtual int getIntFromGrid(int x, int y) = 0;
-	virtual void setIntToGrid(int value, int x, int y) = 0;
+	Grid(sf::RenderWindow* window, int width, int height, sf::Color* colors);
+
+	void toggleGrid();
+
+	virtual int getCellState(int x, int y) = 0;
+	virtual void setCellState(int state, int x, int y) = 0;
+
+	virtual void getMooreNeighborhood(int neighborhood[13], int x, int y, bool shouldLoopHorizontally, bool shouldLoopVertically) = 0;
+	virtual void getVonNeumannNeighborhood(int neighborhood[13], int x, int y, bool shouldLoopHorizontally, bool shouldLoopVertically) = 0;
 
 	virtual void draw() = 0;
 
 protected:
 	sf::RenderWindow* const WINDOW;	//window to draw on
+	sf::Color* const COLORS;		//array of colors that maps cell state to color
 
-	int** grid;	//2D array of cell states
+	bool shouldReadGridA;	//decides which grid to read and which to write
+	int** gridA;			//1st 2D array of cell states
+	int** gridB;			//2nd 2D array of cell states
 };
