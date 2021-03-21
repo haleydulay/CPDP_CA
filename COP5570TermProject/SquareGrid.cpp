@@ -19,7 +19,7 @@ SquareGrid::SquareGrid(sf::RenderWindow* window, int width, int height, sf::Colo
 		gridB[x] = new int[HEIGHT];
 		image[x] = new sf::RectangleShape*[HEIGHT];
 
-		for (int y = 0; y < WIDTH; ++y)
+		for (int y = 0; y < HEIGHT; ++y)
 		{
 			gridA[x][y] = 0;
 			gridB[x][y] = 0;
@@ -36,7 +36,7 @@ SquareGrid::~SquareGrid()
 {
 	for (int x = 0; x < WIDTH; ++x)
 	{
-		for (int y = 0; y < WIDTH; ++y)
+		for (int y = 0; y < HEIGHT; ++y)
 		{
 			delete image[x][y];
 		}
@@ -99,7 +99,7 @@ void SquareGrid::draw()
 {
 	for (int x = 0; x < WIDTH; ++x)
 	{
-		for (int y = 0; y < WIDTH; ++y)
+		for (int y = 0; y < HEIGHT; ++y)
 		{
 			WINDOW->draw(*image[x][y]);
 		}

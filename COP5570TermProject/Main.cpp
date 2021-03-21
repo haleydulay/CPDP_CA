@@ -1,6 +1,7 @@
 #include <SFML/Graphics.hpp>
 #include "HexagonalGrid.h"
 #include "SquareGrid.h"
+#include "TriangularGrid.h"
 
 //TODO: give this function its own class?
 //TODO: parallelize this (that's the whole point of the assignment :P)
@@ -51,20 +52,20 @@ int main()
 {
 	sf::RenderWindow window(sf::VideoMode(200, 200), "COP5570 Term Project");
 	sf::Color colors[2] = {sf::Color(0, 0, 0), sf::Color(255, 255, 255)};
-	SquareGrid* grid = new SquareGrid(&window, 64, 64, colors);
-	int rulesIfOff[13] = {0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0};	//rules for birth in Conway's Game of Life (a cell is born if it has 3 live neighbors)
-	int rulesIfOn[13] = {0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0};	//rules for survival in Conway's Game of Life (a cell survives if it has 2 or 3 live neighbors)
-	bool isMooreNeighborhood = true;	//Conway's Game of Life uses the Moore neighborhood
+	bool isMooreNeighborhood = true;
 	bool shouldLoopHorizontally = true;
 	bool shouldLoopVertically = true;
 
-	//initialize the grid with a SE-bound glider centered at (11, 1)
+	SquareGrid* grid = new SquareGrid(&window, 64, 64, colors);
+	int rulesIfOff[13] = { 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	int rulesIfOn[13] = { 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+
 	grid->setCellState(1, 11, 0);
 	grid->setCellState(1, 12, 1);
 	grid->setCellState(1, 10, 2);
 	grid->setCellState(1, 11, 2);
 	grid->setCellState(1, 12, 2);
-
+	
 	/*
 	HexagonalGrid* grid = new HexagonalGrid(&window, 20, 20, colors);
 	int rulesIfOff[13] = {0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -74,6 +75,21 @@ int main()
 	grid->setCellState(1, 10, 11);
 	grid->setCellState(1, 9, 12);
 	grid->setCellState(1, 10, 12);
+	*/
+
+	/*
+	TriangularGrid* grid = new TriangularGrid(&window, 4, 4, colors);
+	int rulesIfOff[13] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+	int rulesIfOn[13] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+
+	grid->setCellState(1, 0, 0);
+	grid->setCellState(1, 2, 0);
+	grid->setCellState(1, 0, 2);
+	grid->setCellState(1, 2, 2);
+	grid->setCellState(1, 1, 1);
+	grid->setCellState(1, 3, 1);
+	grid->setCellState(1, 1, 3);
+	grid->setCellState(1, 3, 3);
 	*/
 
 	while (window.isOpen())

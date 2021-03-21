@@ -31,7 +31,7 @@ HexagonalGrid::HexagonalGrid(sf::RenderWindow* window, int width, int height, sf
 		gridB[x] = new int[HEIGHT];
 		image[x] = new sf::CircleShape*[HEIGHT];
 
-		for (int y = 0; y < WIDTH; ++y)
+		for (int y = 0; y < HEIGHT; ++y)
 		{
 			gridA[x][y] = 0;
 			gridB[x][y] = 0;
@@ -42,13 +42,13 @@ HexagonalGrid::HexagonalGrid(sf::RenderWindow* window, int width, int height, sf
 	}
 }
 
-//square grid destructor
+//hexagonal grid destructor
 //deletes grid and image
 HexagonalGrid::~HexagonalGrid()
 {
 	for (int x = 0; x < WIDTH; ++x)
 	{
-		for (int y = 0; y < WIDTH; ++y)
+		for (int y = 0; y < HEIGHT; ++y)
 		{
 			delete image[x][y];
 		}
@@ -157,7 +157,7 @@ void HexagonalGrid::draw()
 {
 	for (int x = 0; x < WIDTH; ++x)
 	{
-		for (int y = 0; y < WIDTH; ++y)
+		for (int y = 0; y < HEIGHT; ++y)
 		{
 			WINDOW->draw(*image[x][y]);
 		}

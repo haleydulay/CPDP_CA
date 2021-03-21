@@ -133,11 +133,13 @@
     <ClCompile Include="HexagonalGrid.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="SquareGrid.cpp" />
+    <ClCompile Include="TriangularGrid.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Grid.h" />
     <ClInclude Include="HexagonalGrid.h" />
     <ClInclude Include="SquareGrid.h" />
+    <ClInclude Include="TriangularGrid.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
