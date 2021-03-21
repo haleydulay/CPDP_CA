@@ -79,8 +79,35 @@ void SquareGrid::setCellState(int value, int x, int y)
 	image[x][y]->setFillColor(COLORS[value]);
 }
 
+//puts the states of the cells in the neighborhood of the cell at (x, y) in the neighborhood array
+//bools control whether the left edge of the grid should connect to the right and whether the top edge of the grid should connect to the bottom
+//anything outside the grid is given a state of 0
+void SquareGrid::getNeighborhood(int neighborhood[13], int x, int y, bool isMooreNeighborhood, bool shouldLoopHorizontally, bool shouldLoopVertically)
+{
+	if (isMooreNeighborhood)
+	{
+		getMooreNeighborhood(neighborhood, x, y, shouldLoopHorizontally, shouldLoopVertically);
+	}
+	else
+	{
+		getVonNeumannNeighborhood(neighborhood, x, y, shouldLoopHorizontally, shouldLoopVertically);
+	}
+}
+
+//draws cells
+void SquareGrid::draw()
+{
+	for (int x = 0; x < WIDTH; ++x)
+	{
+		for (int y = 0; y < WIDTH; ++y)
+		{
+			WINDOW->draw(*image[x][y]);
+		}
+	}
+}
+
 //puts the states of the cells in the Moore neighborhood of the cell at (x, y) in the neighborhood array
-//cells that share a vertex are neighbors 
+//cells that share a vertex are neighbors
 //bools control whether the left edge of the grid should connect to the right and whether the top edge of the grid should connect to the bottom
 //anything outside the grid is given a state of 0
 void SquareGrid::getMooreNeighborhood(int neighborhood[13], int x, int y, bool shouldLoopHorizontally, bool shouldLoopVertically)
@@ -148,7 +175,7 @@ void SquareGrid::getMooreNeighborhood(int neighborhood[13], int x, int y, bool s
 }
 
 //puts the states of the cells in the von Neumann neighborhood of the cell at (x, y) in the neighborhood array
-//cells that share an edge are neighbors 
+//cells that share an edge are neighbors
 //bools control whether the left edge of the grid should connect to the right and whether the top edge of the grid should connect to the bottom
 //anything outside the grid is given a state of 0
 void SquareGrid::getVonNeumannNeighborhood(int neighborhood[13], int x, int y, bool shouldLoopHorizontally, bool shouldLoopVertically)
@@ -195,18 +222,6 @@ void SquareGrid::getVonNeumannNeighborhood(int neighborhood[13], int x, int y, b
 			neighborhood[2] = grid[x][y];									//C
 			neighborhood[3] = (x < WIDTH - 1) ? (grid[x + 1][y]) : (0);		//E
 			neighborhood[4] = (y < HEIGHT - 1) ? (grid[x][y + 1]) : (0);	//S
-		}
-	}
-}
-
-//draws cells
-void SquareGrid::draw()
-{
-	for (int x = 0; x < WIDTH; ++x)
-	{
-		for (int y = 0; y < WIDTH; ++y)
-		{
-			WINDOW->draw(*image[x][y]);
 		}
 	}
 }

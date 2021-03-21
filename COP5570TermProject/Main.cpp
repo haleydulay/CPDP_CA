@@ -1,4 +1,5 @@
 #include <SFML/Graphics.hpp>
+#include "HexagonalGrid.h"
 #include "SquareGrid.h"
 
 //TODO: give this function its own class?
@@ -13,7 +14,7 @@
 //the particular rules used here are the rules for Conway's Game of Life, which can be abbreviated B3/S23
 //B3/S23 means a cell is born (goes from state 0 to state 1) if the outer total is 3 and a cell survives (goes from state 1 to state 1) if the outer total is 2 or 3
 //under B3/S23, a cell will enter or stay in state 0 in any other situation
-void updateMooreOuterTotalisticCellularAutomaton(Grid* grid, const int rulesIfOff[13], const int rulesIfOn[13], bool shouldLoopHorizontally, bool shouldLoopVertically)
+void updateOuterTotalisticCellularAutomaton(Grid* grid, const int rulesIfOff[13], const int rulesIfOn[13], bool isMooreNeighborhood, bool shouldLoopHorizontally, bool shouldLoopVertically)
 {
 	grid->toggleGrid();
 
@@ -25,7 +26,7 @@ void updateMooreOuterTotalisticCellularAutomaton(Grid* grid, const int rulesIfOf
 			int state = grid->getCellState(x, y);
 			int total = -state;
 
-			grid->getMooreNeighborhood(neighborhood, x, y, shouldLoopHorizontally, shouldLoopVertically);
+			grid->getNeighborhood(neighborhood, x, y, isMooreNeighborhood, shouldLoopHorizontally, shouldLoopVertically);
 
 			for (int neighborState : neighborhood)
 			{
@@ -53,6 +54,7 @@ int main()
 	SquareGrid* grid = new SquareGrid(&window, 64, 64, colors);
 	int rulesIfOff[13] = {0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0};	//rules for birth in Conway's Game of Life (a cell is born if it has 3 live neighbors)
 	int rulesIfOn[13] = {0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0};	//rules for survival in Conway's Game of Life (a cell survives if it has 2 or 3 live neighbors)
+	bool isMooreNeighborhood = true;	//Conway's Game of Life uses the Moore neighborhood
 	bool shouldLoopHorizontally = true;
 	bool shouldLoopVertically = true;
 
@@ -62,6 +64,17 @@ int main()
 	grid->setCellState(1, 10, 2);
 	grid->setCellState(1, 11, 2);
 	grid->setCellState(1, 12, 2);
+
+	/*
+	HexagonalGrid* grid = new HexagonalGrid(&window, 20, 20, colors);
+	int rulesIfOff[13] = {0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+	int rulesIfOn[13] = {0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0};
+
+	grid->setCellState(1, 10, 10);
+	grid->setCellState(1, 10, 11);
+	grid->setCellState(1, 9, 12);
+	grid->setCellState(1, 10, 12);
+	*/
 
 	while (window.isOpen())
 	{
@@ -75,7 +88,7 @@ int main()
 			}
 		}
 
-		updateMooreOuterTotalisticCellularAutomaton((Grid*)grid, rulesIfOff, rulesIfOn, shouldLoopHorizontally, shouldLoopVertically);
+		updateOuterTotalisticCellularAutomaton((Grid*)grid, rulesIfOff, rulesIfOn, isMooreNeighborhood, shouldLoopHorizontally, shouldLoopVertically);
 
 		window.clear();
 		grid->draw();

@@ -18,8 +18,7 @@ public:
 	virtual int getCellState(int x, int y) = 0;
 	virtual void setCellState(int state, int x, int y) = 0;
 
-	virtual void getMooreNeighborhood(int neighborhood[13], int x, int y, bool shouldLoopHorizontally, bool shouldLoopVertically) = 0;
-	virtual void getVonNeumannNeighborhood(int neighborhood[13], int x, int y, bool shouldLoopHorizontally, bool shouldLoopVertically) = 0;
+	virtual void getNeighborhood(int neighborhood[13], int x, int y, bool isMooreNeighborhood, bool shouldLoopHorizontally, bool shouldLoopVertically) = 0;
 
 	virtual void draw() = 0;
 

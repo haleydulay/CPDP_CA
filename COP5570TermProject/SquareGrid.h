@@ -13,11 +13,13 @@ public:
 	int getCellState(int x, int y);
 	void setCellState(int state, int x, int y);
 
-	void getMooreNeighborhood(int neighborhood[13], int x, int y, bool shouldLoopHorizontally, bool shouldLoopVertically);
-	void getVonNeumannNeighborhood(int neighborhood[13], int x, int y, bool shouldLoopHorizontally, bool shouldLoopVertically);
+	void getNeighborhood(int neighborhood[13], int x, int y, bool isMooreNeighborhood, bool shouldLoopHorizontally, bool shouldLoopVertically);
 
 	void draw();
 
 private:
 	sf::RectangleShape*** image;	//2D array of cell images
+
+	void getMooreNeighborhood(int neighborhood[13], int x, int y, bool shouldLoopHorizontally, bool shouldLoopVertically);
+	void getVonNeumannNeighborhood(int neighborhood[13], int x, int y, bool shouldLoopHorizontally, bool shouldLoopVertically);
 };
