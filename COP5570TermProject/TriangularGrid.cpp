@@ -7,9 +7,10 @@ const float CIRCUMRADII_PER_BASE = 1.7320508075688772935274463415058723669428052
 //initializes member variables
 TriangularGrid::TriangularGrid(sf::RenderWindow* window, int width, int height, sf::Color* colors) : Grid(window, width, height, colors)
 {
-	float pixelsPerBase = window->getSize().x * 2.0f / (width + 1.0f);
-	float pixelsPerHeight = window->getSize().y / (float)height;
 	float circleRadius;
+	
+	pixelsPerBase = window->getSize().x * 2.0f / (width + 1.0f);
+	pixelsPerHeight = window->getSize().y / (float)height;
 
 	if (pixelsPerBase / CIRCUMRADII_PER_BASE < pixelsPerHeight / CIRCUMRADII_PER_HEIGHT)
 	{
@@ -132,7 +133,54 @@ void TriangularGrid::getNeighborhood(int neighborhood[13], int x, int y, bool is
 
 sf::Vector2i TriangularGrid::getGridPositionAtMouse()
 {
-	return sf::Vector2i();
+	sf::Vector2i mousePosition = sf::Mouse::getPosition(*WINDOW);
+	float numBases = mousePosition.x / pixelsPerBase;
+	float numHeights = mousePosition.y / pixelsPerHeight;
+	int x = (int)floorf(numBases);
+	int y = (int)floorf(numHeights);
+
+	numBases -= x;
+	numHeights -= y;
+	x *= 2;
+
+	if (numBases < 0.5f)							//left of center, may actually be in (x - 1, y)
+	{
+		if (y % 2 == 0)								//(x, y) points up, border with (x - 1, y) is slanted upward
+		{
+			if (numHeights < 2 * (0.5f - numBases))	//+y is down, in (x - 1, y) if mouse above line
+			{
+				--x;
+			}
+		}
+		else										//(x, y) points down, border with (x - 1, y) is slanted downward
+		{
+			if (numHeights > 2 * numBases)			//+y is down, in (x - 1, y) if mouse below line
+			{
+				--x;
+			}
+		}
+	}
+	else											//right of center, may actually be in (x + 1, y)
+	{
+		numBases -= 0.5f;
+
+		if (y % 2 == 0)								//(x, y) points up, border with (x + 1, y) is slanted downward
+		{
+			if (numHeights < 2 * numBases)			//+y is down, in (x + 1, y) if mouse above line
+			{
+				++x;
+			}
+		}
+		else										//(x, y) points down, border with (x + 1, y) is slanted upward
+		{
+			if (numHeights > 2 * (0.5f - numBases))	//+y is down, in (x + 1, y) if mouse below line
+			{
+				++x;
+			}
+		}
+	}
+
+	return sf::Vector2i(x, y);
 }
 
 //draws cells

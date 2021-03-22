@@ -22,6 +22,8 @@ public:
 	void draw();
 
 private:
+	float pixelsPerBase;		//width of a cell in pixels
+	float pixelsPerHeight;		//height of a cell in pixels
 	sf::CircleShape*** image;	//2D array of cell images
 
 	void getMooreNeighborhoodForUpTriangle(int neighborhood[13], int x, int y, bool shouldLoopHorizontally, bool shouldLoopVertically);

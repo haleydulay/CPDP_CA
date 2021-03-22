@@ -59,10 +59,12 @@ int main()
 	bool shouldLoopHorizontally = true;
 	bool shouldLoopVertically = true;
 
+	///*
 	SquareGrid* grid = new SquareGrid(&window, 64, 64, colors);
 	int rulesIfOff[13] = {0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 	int rulesIfOn[13] = {0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-	
+	//*/
+
 	/*
 	HexagonalGrid* grid = new HexagonalGrid(&window, 64, 64, colors);
 	int rulesIfOff[13] = {0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -78,15 +80,6 @@ int main()
 	TriangularGrid* grid = new TriangularGrid(&window, 64, 64, colors);
 	int rulesIfOff[13] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 	int rulesIfOn[13] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
-
-	grid->setCellState(1, 0, 0);
-	grid->setCellState(1, 2, 0);
-	grid->setCellState(1, 0, 2);
-	grid->setCellState(1, 2, 2);
-	grid->setCellState(1, 1, 1);
-	grid->setCellState(1, 3, 1);
-	grid->setCellState(1, 1, 3);
-	grid->setCellState(1, 3, 3);
 	*/
 
 	while (window.isOpen())
