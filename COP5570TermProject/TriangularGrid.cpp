@@ -131,6 +131,8 @@ void TriangularGrid::getNeighborhood(int neighborhood[13], int x, int y, bool is
 	}
 }
 
+//gets grid (x, y) at mouse position
+//may be outside grid's actual range
 sf::Vector2i TriangularGrid::getGridPositionAtMouse()
 {
 	sf::Vector2i mousePosition = sf::Mouse::getPosition(*WINDOW);

@@ -69,11 +69,6 @@ int main()
 	HexagonalGrid* grid = new HexagonalGrid(&window, 64, 64, colors);
 	int rulesIfOff[13] = {0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 	int rulesIfOn[13] = {0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0};
-
-	grid->setCellState(1, 10, 10);
-	grid->setCellState(1, 10, 11);
-	grid->setCellState(1, 9, 12);
-	grid->setCellState(1, 10, 12);
 	*/
 
 	/*

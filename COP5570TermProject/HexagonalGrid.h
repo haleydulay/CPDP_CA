@@ -21,5 +21,11 @@ public:
 	void draw();
 
 private:
-	sf::CircleShape*** image;	//2D array of cell images
+	float pixelsPerInradius;		//half the width of a cell in pixels
+	float pixelsPerCircumradius;	//half the height of a cell in pixels
+	sf::CircleShape*** image;		//2D array of cell images
+
+	sf::Vector3f getCubeCoordsAtMouse();
+	sf::Vector3i roundCubeCoords(const sf::Vector3f& coords);
+	sf::Vector2i convertCubeCoordsToGridPosition(const sf::Vector3i& coords);
 };

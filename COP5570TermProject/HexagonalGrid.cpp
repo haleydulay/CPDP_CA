@@ -1,14 +1,15 @@
 #include "HexagonalGrid.h"
 
 const float INRADII_PER_CIRCUMRADIUS = 1.1547005383792515290182975610039149112952035025402537520372046529f;
+const float SQRT_3 = 1.7320508075688772935274463415058723669428052538103806280558069794f;
 
 //hexagonal grid constructor
 //initializes member variables
 HexagonalGrid::HexagonalGrid(sf::RenderWindow* window, int width, int height, sf::Color* colors) : Grid(window, width, height, colors)
 {
-	float pixelsPerInradius = (height > 1) ? (window->getSize().x / (2.0f * width + 1.0f)) : (window->getSize().x / (2.0f * width));
-	float pixelsPerCircumradius = window->getSize().y * 2.0f / (3.0f * height + 1.0f);
 	float circleRadius;
+	pixelsPerInradius = (height > 1) ? (window->getSize().x / (2.0f * width + 1.0f)) : (window->getSize().x / (2.0f * width));
+	pixelsPerCircumradius = window->getSize().y * 2.0f / (3.0f * height + 1.0f);
 
 	if (pixelsPerInradius * INRADII_PER_CIRCUMRADIUS < pixelsPerCircumradius)
 	{
@@ -152,9 +153,12 @@ void HexagonalGrid::getNeighborhood(int neighborhood[13], int x, int y, bool isM
 	}
 }
 
+//gets grid (x, y) at mouse position
+//may be outside grid's actual range
+//adapted from https://www.redblobgames.com/grids/hexagons/
 sf::Vector2i HexagonalGrid::getGridPositionAtMouse()
 {
-	return sf::Vector2i();
+	return convertCubeCoordsToGridPosition(roundCubeCoords(getCubeCoordsAtMouse()));
 }
 
 //draws cells
@@ -167,4 +171,56 @@ void HexagonalGrid::draw()
 			WINDOW->draw(*image[x][y]);
 		}
 	}
+}
+
+//gets cube coordinates at mouse position
+//the algorithm expects the origin to be at the center of the cell at (0, 0), but it is at the upper-left corner of the bounding box of the cell at (0, 0)
+//the offset from the expected origin is taken into account
+//adapted from https://www.redblobgames.com/grids/hexagons/
+sf::Vector3f HexagonalGrid::getCubeCoordsAtMouse()
+{
+	sf::Vector2i trueMousePosition = sf::Mouse::getPosition(*WINDOW);
+	sf::Vector2f adjustedMousePosition(trueMousePosition.x - pixelsPerInradius, trueMousePosition.y - pixelsPerCircumradius);
+	float x = (adjustedMousePosition.x / SQRT_3 - adjustedMousePosition.y / 3.0f) / pixelsPerCircumradius;
+	float z = (adjustedMousePosition.y * 2.0f / 3.0f) / pixelsPerCircumradius;
+
+	return sf::Vector3f(x, -x - z, z);
+}
+
+//gets the cube coordinates of the cell that the input cube coordinates are in
+//adapted from https://www.redblobgames.com/grids/hexagons/
+sf::Vector3i HexagonalGrid::roundCubeCoords(const sf::Vector3f& coords)
+{
+	int xRound = (int)roundf(coords.x);
+	int yRound = (int)roundf(coords.y);
+	int zRound = (int)roundf(coords.z);
+
+	float dx = fabsf(xRound - coords.x);
+	float dy = fabsf(yRound - coords.y);
+	float dz = fabsf(zRound - coords.z);
+
+	if (dx > dy && dx > dz)
+	{
+		xRound = -yRound - zRound;
+	}
+	else if (dy > dz)
+	{
+		yRound = -xRound - zRound;
+	}
+	else
+	{
+		zRound = -xRound - yRound;
+	}
+
+	return sf::Vector3i(xRound, yRound, zRound);
+}
+
+//converts from cube coordinate system to grid coordinate system
+//adapted from https://www.redblobgames.com/grids/hexagons/
+sf::Vector2i HexagonalGrid::convertCubeCoordsToGridPosition(const sf::Vector3i& coords)
+{
+	int y = coords.z;
+	int x = (y % 2 == 0) ? (coords.x + y / 2) : (coords.x + (y - 1) / 2);
+
+	return sf::Vector2i(x, y);
 }
