@@ -86,19 +86,19 @@ int TriangularGrid::getCellState(int x, int y)
 	}
 }
 
-//sets grid[x][y] to value and updates color of cell
-void TriangularGrid::setCellState(int value, int x, int y)
+//sets grid[x][y] to state and updates color of cell
+void TriangularGrid::setCellState(int state, int x, int y)
 {
 	if (shouldReadGridA)
 	{
-		gridB[x][y] = value;
+		gridB[x][y] = state;
 	}
 	else
 	{
-		gridA[x][y] = value;
+		gridA[x][y] = state;
 	}
 
-	image[x][y]->setFillColor(COLORS[value]);
+	image[x][y]->setFillColor(COLORS[state]);
 }
 
 //puts the states of the cells in the neighborhood of the cell at (x, y) in the neighborhood array
@@ -128,6 +128,11 @@ void TriangularGrid::getNeighborhood(int neighborhood[13], int x, int y, bool is
 			getVonNeumannNeighborhoodForDownTriangle(neighborhood, x, y, shouldLoopHorizontally, shouldLoopVertically);
 		}
 	}
+}
+
+sf::Vector2i TriangularGrid::getGridPositionAtMouse()
+{
+	return sf::Vector2i();
 }
 
 //draws cells

@@ -50,27 +50,21 @@ void updateOuterTotalisticCellularAutomaton(Grid* grid, const int rulesIfOff[13]
 //sets program up and handles events and drawing
 int main()
 {
-	sf::RenderWindow window(sf::VideoMode(200, 200), "COP5570 Term Project");
-	bool isUnpaused = true;
+	sf::RenderWindow window(sf::VideoMode(sf::VideoMode::getDesktopMode().width - 100, sf::VideoMode::getDesktopMode().height - 100), "COP5570 Term Project", sf::Style::Close | sf::Style::Titlebar);
+	bool isUnpaused = false;
 	bool shouldStep = false;
 
-	sf::Color colors[2] = {sf::Color(0, 0, 0), sf::Color(255, 255, 255)};
+	sf::Color colors[2] = {sf::Color(63, 63, 63), sf::Color(255, 255, 255)};
 	bool isMooreNeighborhood = true;
 	bool shouldLoopHorizontally = true;
 	bool shouldLoopVertically = true;
 
 	SquareGrid* grid = new SquareGrid(&window, 64, 64, colors);
-	int rulesIfOff[13] = { 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-	int rulesIfOn[13] = { 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-
-	grid->setCellState(1, 11, 0);
-	grid->setCellState(1, 12, 1);
-	grid->setCellState(1, 10, 2);
-	grid->setCellState(1, 11, 2);
-	grid->setCellState(1, 12, 2);
+	int rulesIfOff[13] = {0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+	int rulesIfOn[13] = {0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 	
 	/*
-	HexagonalGrid* grid = new HexagonalGrid(&window, 20, 20, colors);
+	HexagonalGrid* grid = new HexagonalGrid(&window, 64, 64, colors);
 	int rulesIfOff[13] = {0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 	int rulesIfOn[13] = {0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0};
 
@@ -81,7 +75,7 @@ int main()
 	*/
 
 	/*
-	TriangularGrid* grid = new TriangularGrid(&window, 4, 4, colors);
+	TriangularGrid* grid = new TriangularGrid(&window, 64, 64, colors);
 	int rulesIfOff[13] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 	int rulesIfOn[13] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
 
@@ -133,6 +127,16 @@ int main()
 		{
 			updateOuterTotalisticCellularAutomaton((Grid*)grid, rulesIfOff, rulesIfOn, isMooreNeighborhood, shouldLoopHorizontally, shouldLoopVertically);
 			shouldStep = false;
+		}
+
+		if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
+		{
+			sf::Vector2i gridPosition = grid->getGridPositionAtMouse();
+
+			if (gridPosition.x > -1 && gridPosition.x < grid->WIDTH && gridPosition.y > -1 && gridPosition.y < grid->HEIGHT)
+			{
+				grid->setCellState(1, gridPosition.x, gridPosition.y);
+			}
 		}
 
 		window.clear();

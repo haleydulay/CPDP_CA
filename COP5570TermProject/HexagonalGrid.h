@@ -5,7 +5,7 @@
 //hexagonal grid class
 //derived class of grid for hexagonal cells
 //pointy-top with odd-numbered rows shifted right
-class HexagonalGrid : Grid
+class HexagonalGrid : public Grid
 {
 public:
 	HexagonalGrid(sf::RenderWindow* window, int width, int height, sf::Color* colors);
@@ -15,6 +15,8 @@ public:
 	void setCellState(int state, int x, int y);
 
 	void getNeighborhood(int neighborhood[13], int x, int y, bool isMooreNeighborhood, bool shouldLoopHorizontally, bool shouldLoopVertically);
+
+	sf::Vector2i getGridPositionAtMouse();
 
 	void draw();
 

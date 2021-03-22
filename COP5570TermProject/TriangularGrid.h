@@ -6,7 +6,7 @@
 //derived class of grid for triangular cells
 //rows are separated by straight lines
 //grid[x][y] is a triangle that points up if x + y is even and down otherwise
-class TriangularGrid : Grid
+class TriangularGrid : public Grid
 {
 public:
 	TriangularGrid(sf::RenderWindow* window, int width, int height, sf::Color* colors);
@@ -16,6 +16,8 @@ public:
 	void setCellState(int state, int x, int y);
 
 	void getNeighborhood(int neighborhood[13], int x, int y, bool isMooreNeighborhood, bool shouldLoopHorizontally, bool shouldLoopVertically);
+
+	sf::Vector2i getGridPositionAtMouse();
 
 	void draw();
 

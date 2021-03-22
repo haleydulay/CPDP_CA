@@ -20,6 +20,8 @@ public:
 
 	virtual void getNeighborhood(int neighborhood[13], int x, int y, bool isMooreNeighborhood, bool shouldLoopHorizontally, bool shouldLoopVertically) = 0;
 
+	virtual sf::Vector2i getGridPositionAtMouse() = 0;
+
 	virtual void draw() = 0;
 
 protected:

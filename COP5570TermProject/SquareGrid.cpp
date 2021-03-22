@@ -6,8 +6,11 @@ SquareGrid::SquareGrid(sf::RenderWindow* window, int width, int height, sf::Colo
 {
 	float rectangleWidth = window->getSize().x / (float)width;
 	float rectangleHeight = window->getSize().y / (float)height;
-	float squareLength = (rectangleWidth < rectangleHeight) ? (rectangleWidth) : (rectangleHeight);
-	sf::Vector2f squareSize(squareLength, squareLength);
+	sf::Vector2f squareSize;
+
+	squareLength = (rectangleWidth < rectangleHeight) ? (rectangleWidth) : (rectangleHeight);
+	squareSize.x = squareLength;
+	squareSize.y = squareLength;
 
 	gridA = new int*[WIDTH];
 	gridB = new int*[WIDTH];
@@ -64,19 +67,19 @@ int SquareGrid::getCellState(int x, int y)
 	}
 }
 
-//sets grid[x][y] to value and updates color of cell
-void SquareGrid::setCellState(int value, int x, int y)
+//sets grid[x][y] to state and updates color of cell
+void SquareGrid::setCellState(int state, int x, int y)
 {
 	if (shouldReadGridA)
 	{
-		gridB[x][y] = value;
+		gridB[x][y] = state;
 	}
 	else
 	{
-		gridA[x][y] = value;
+		gridA[x][y] = state;
 	}
 	
-	image[x][y]->setFillColor(COLORS[value]);
+	image[x][y]->setFillColor(COLORS[state]);
 }
 
 //puts the states of the cells in the neighborhood of the cell at (x, y) in the neighborhood array
@@ -92,6 +95,15 @@ void SquareGrid::getNeighborhood(int neighborhood[13], int x, int y, bool isMoor
 	{
 		getVonNeumannNeighborhood(neighborhood, x, y, shouldLoopHorizontally, shouldLoopVertically);
 	}
+}
+
+sf::Vector2i SquareGrid::getGridPositionAtMouse()
+{
+	sf::Vector2i mousePosition = sf::Mouse::getPosition(*WINDOW);
+	int x = (int)floorf(mousePosition.x / squareLength);
+	int y = (int)floorf(mousePosition.y / squareLength);
+
+	return sf::Vector2i(x, y);
 }
 
 //draws cells
