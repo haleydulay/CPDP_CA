@@ -51,6 +51,9 @@ void updateOuterTotalisticCellularAutomaton(Grid* grid, const int rulesIfOff[13]
 int main()
 {
 	sf::RenderWindow window(sf::VideoMode(200, 200), "COP5570 Term Project");
+	bool isUnpaused = true;
+	bool shouldStep = false;
+
 	sf::Color colors[2] = {sf::Color(0, 0, 0), sf::Color(255, 255, 255)};
 	bool isMooreNeighborhood = true;
 	bool shouldLoopHorizontally = true;
@@ -98,13 +101,39 @@ int main()
 
 		while (window.pollEvent(event))
 		{
-			if (event.type == sf::Event::Closed)
+			switch (event.type)
 			{
+			case sf::Event::Closed:
 				window.close();
+				break;
+
+			case sf::Event::KeyPressed:
+				switch (event.key.code)
+				{
+				case sf::Keyboard::Space:
+					isUnpaused = !isUnpaused;
+					break;
+
+				case sf::Keyboard::Return:
+					shouldStep = true;
+					break;
+
+				default:
+					break;
+				}
+
+				break;
+
+			default:
+				break;
 			}
 		}
 
-		updateOuterTotalisticCellularAutomaton((Grid*)grid, rulesIfOff, rulesIfOn, isMooreNeighborhood, shouldLoopHorizontally, shouldLoopVertically);
+		if (isUnpaused || shouldStep)
+		{
+			updateOuterTotalisticCellularAutomaton((Grid*)grid, rulesIfOff, rulesIfOn, isMooreNeighborhood, shouldLoopHorizontally, shouldLoopVertically);
+			shouldStep = false;
+		}
 
 		window.clear();
 		grid->draw();
