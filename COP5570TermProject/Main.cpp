@@ -3,6 +3,9 @@
 #include "SquareGrid.h"
 #include "TriangularGrid.h"
 
+//TODO: give the CAs their own classes?
+//TODO: parallelize them (that's the whole point of the assignment :P)
+
 //Langton's Ant constants
 //square grids
 //neighbor
@@ -16,9 +19,11 @@ const int MASK_SQUARE_CELL = 1;
 const int STATE_SQUARE_ON = 1;
 
 //ant
+const int IS_SQUARE_ANT = 4;
+const int REVERSE_SQUARE_ANT = 2;
 const int MASK_SQUARE_ANT = 6;
-const int STATE_SQUARE_CLOCKWISE = 2;
-const int STATE_SQUARE_COUNTER = 4;
+const int STATE_SQUARE_CLOCKWISE = 4;
+const int STATE_SQUARE_COUNTER = 6;
 
 //facing
 const int MASK_SQUARE_FACING = 24;
@@ -27,8 +32,32 @@ const int STATE_SQUARE_N = 8;
 const int STATE_SQUARE_W = 16;
 const int STATE_SQUARE_S = 24;
 
-//TODO: give this function its own class?
-//TODO: parallelize this (that's the whole point of the assignment :P)
+//triangular grids
+//neighbor
+const int NEIGHBOR_TRIANGULAR_NE = 2;
+const int NEIGHBOR_TRIANGULAR_N = 0;
+const int NEIGHBOR_TRIANGULAR_NW = 0;
+const int NEIGHBOR_TRIANGULAR_SW = 1;
+const int NEIGHBOR_TRIANGULAR_S = 3;
+const int NEIGHBOR_TRIANGULAR_SE = 3;
+
+//cell
+const int MASK_TRIANGULAR_CELL = 1;
+const int STATE_TRIANGULAR_ON = 1;
+
+//ant
+const int IS_TRIANGULAR_ANT = 4;
+const int REVERSE_TRIANGULAR_ANT = 2;
+const int MASK_TRIANGULAR_ANT = 6;
+const int STATE_TRIANGULAR_CLOCKWISE = 4;
+const int STATE_TRIANGULAR_COUNTER = 6;
+
+//facing
+const int MASK_TRIANGULAR_FACING = 24;
+const int STATE_TRIANGULAR_E = 0;
+const int STATE_TRIANGULAR_NS = 8;
+const int STATE_TRIANGULAR_W = 16;
+
 //does one time step for an outer-totalistic cellular automaton
 void updateOuterTotalisticCellularAutomaton(Grid* grid, const int rulesIfOff[13], const int rulesIfOn[13], bool isMooreNeighborhood, bool shouldLoopHorizontally, bool shouldLoopVertically)
 {
@@ -70,7 +99,7 @@ bool isAntComingToThisSquare(int x, int y, int state)
 	//ants move in the opposite direction when the cell is on
 	if ((state & MASK_SQUARE_CELL) == STATE_SQUARE_ON)
 	{
-		ant ^= MASK_SQUARE_ANT;
+		ant ^= REVERSE_SQUARE_ANT;
 	}
 
 	if (ant == STATE_SQUARE_CLOCKWISE)
@@ -125,14 +154,13 @@ bool isAntComingToThisSquare(int x, int y, int state)
 	return x == 0 && y == 0;
 }
 
-//TODO: give this function its own class?
-//TODO: parallelize this (that's the whole point of the assignment :P)
 //does one time step for a cellular automaton based on Langton's Ant
+//used on square grids
 //ant rotates, recolors cell, and moves forward
 //ants die if they stop on the same space
 //state is 5 bits: FFAAC
 //C0 = cell is off, C1 = cell is on
-//AA00 = no ant, AA01 = clockwise ant, AA10 = counter-clockwise ant, A11 = no ant
+//AA00 = no ant, A01 = no ant, AA10 = clockwise ant, AA11 = counter-clockwise ant
 //FF00 = facing E, FF01 = facing N, FF10 = facing W, FF11 = facing S
 void updateLangtonsAntAutomaton(SquareGrid* grid, bool shouldLoopHorizontally, bool shouldLoopVertically)
 {
@@ -151,37 +179,230 @@ void updateLangtonsAntAutomaton(SquareGrid* grid, bool shouldLoopHorizontally, b
 
 			grid->getNeighborhood(neighborhood, x, y, false, shouldLoopHorizontally, shouldLoopVertically);
 
-			if (ant == STATE_SQUARE_CLOCKWISE || ant == STATE_SQUARE_COUNTER)
+			if (ant & IS_SQUARE_ANT)
 			{
 				cell ^= MASK_SQUARE_CELL;
 			}
 
-			if (isAntComingToThisSquare(1, 0, neighborhood[NEIGHBOR_SQUARE_E]))
+			if ((neighborhood[NEIGHBOR_SQUARE_E] & IS_SQUARE_ANT) && isAntComingToThisSquare(1, 0, neighborhood[NEIGHBOR_SQUARE_E]))
 			{
 				++numAnts;
 				ant = neighborhood[NEIGHBOR_SQUARE_E] & MASK_SQUARE_ANT;
 				facing = STATE_SQUARE_W;
 			}
 
-			if (isAntComingToThisSquare(0, -1, neighborhood[NEIGHBOR_SQUARE_N]))
+			if ((neighborhood[NEIGHBOR_SQUARE_N] & IS_SQUARE_ANT) && isAntComingToThisSquare(0, -1, neighborhood[NEIGHBOR_SQUARE_N]))
 			{
 				++numAnts;
 				ant = neighborhood[NEIGHBOR_SQUARE_N] & MASK_SQUARE_ANT;
 				facing = STATE_SQUARE_S;
 			}
 
-			if (isAntComingToThisSquare(-1, 0, neighborhood[NEIGHBOR_SQUARE_W]))
+			if ((neighborhood[NEIGHBOR_SQUARE_W] & IS_SQUARE_ANT) && isAntComingToThisSquare(-1, 0, neighborhood[NEIGHBOR_SQUARE_W]))
 			{
 				++numAnts;
 				ant = neighborhood[NEIGHBOR_SQUARE_W] & MASK_SQUARE_ANT;
 				facing = STATE_SQUARE_E;
 			}
 
-			if (isAntComingToThisSquare(0, 1, neighborhood[NEIGHBOR_SQUARE_S]))
+			if ((neighborhood[NEIGHBOR_SQUARE_S] & IS_SQUARE_ANT) && isAntComingToThisSquare(0, 1, neighborhood[NEIGHBOR_SQUARE_S]))
 			{
 				++numAnts;
 				ant = neighborhood[NEIGHBOR_SQUARE_S] & MASK_SQUARE_ANT;
 				facing = STATE_SQUARE_N;
+			}
+
+			if (numAnts == 1)
+			{
+				grid->setCellState(facing | ant | cell, x, y);
+			}
+			else
+			{
+				grid->setCellState(cell, x, y);
+			}
+		}
+	}
+}
+
+//checks if ant at (x, y) with state state will be at (0, 0) on next time step
+//used on up triangles on triangular grids
+bool isAntComingToThisUpTriangle(int x, int y, int state)
+{
+	int ant = state & MASK_TRIANGULAR_ANT;
+
+	//ants move in the opposite direction when the cell is on
+	if ((state & MASK_TRIANGULAR_CELL) == STATE_TRIANGULAR_ON)
+	{
+		ant ^= REVERSE_TRIANGULAR_ANT;
+	}
+
+	if (ant == STATE_TRIANGULAR_CLOCKWISE)
+	{
+		switch (state & MASK_TRIANGULAR_FACING)
+		{
+		case STATE_TRIANGULAR_E:
+			++x;
+			break;
+
+		case STATE_TRIANGULAR_W:
+			--y;
+			break;
+
+		case STATE_TRIANGULAR_NS:
+		default:
+			--x;
+			break;
+		}
+	}
+	else if (ant == STATE_TRIANGULAR_COUNTER)
+	{
+		switch (state & MASK_TRIANGULAR_FACING)
+		{
+		case STATE_TRIANGULAR_E:
+			--y;
+			break;
+
+		case STATE_TRIANGULAR_W:
+			--x;
+			break;
+
+		case STATE_TRIANGULAR_NS:
+		default:
+			++x;
+			break;
+		}
+	}
+
+	return x == 0 && y == 0;
+}
+
+//checks if ant at (x, y) with state state will be at (0, 0) on next time step
+//used on down triangles on triangular grids
+bool isAntComingToThisDownTriangle(int x, int y, int state)
+{
+	int ant = state & MASK_TRIANGULAR_ANT;
+
+	//ants move in the opposite direction when the cell is on
+	if ((state & MASK_TRIANGULAR_CELL) == STATE_TRIANGULAR_ON)
+	{
+		ant ^= REVERSE_TRIANGULAR_ANT;
+	}
+
+	if (ant == STATE_TRIANGULAR_CLOCKWISE)
+	{
+		switch (state & MASK_TRIANGULAR_FACING)
+		{
+		case STATE_TRIANGULAR_E:
+			++y;
+			break;
+
+		case STATE_TRIANGULAR_W:
+			--x;
+			break;
+
+		case STATE_TRIANGULAR_NS:
+		default:
+			++x;
+			break;
+		}
+	}
+	else if (ant == STATE_TRIANGULAR_COUNTER)
+	{
+		switch (state & MASK_TRIANGULAR_FACING)
+		{
+		case STATE_TRIANGULAR_E:
+			++x;
+			break;
+
+		case STATE_TRIANGULAR_W:
+			++y;
+			break;
+
+		case STATE_TRIANGULAR_NS:
+		default:
+			--x;
+			break;
+		}
+	}
+
+	return x == 0 && y == 0;
+}
+
+//does one time step for a cellular automaton based on Langton's Ant
+//used on triangular grids
+//ant rotates, recolors cell, and moves forward
+//ants die if they stop on the same space
+//state is 5 bits: FFAAC
+//C0 = cell is off, C1 = cell is on
+//AA00 = no ant, A01 = no ant, AA10 = clockwise ant, AA11 = counter-clockwise ant
+//FF00 = facing E, FF01 = facing N or S, FF10 = facing W, FF11 = facing N or S
+void updateLangtonsAntAutomaton(TriangularGrid* grid, bool shouldLoopHorizontally, bool shouldLoopVertically)
+{
+	grid->toggleGrid();
+
+	for (int x = 0; x < grid->WIDTH; ++x)
+	{
+		for (int y = 0; y < grid->HEIGHT; ++y)
+		{
+			int neighborhood[13] = {0};
+			int state = grid->getCellState(x, y);
+			int numAnts = 0;
+			int ant = state & MASK_TRIANGULAR_ANT;
+			int facing = 0;
+			int cell = state & MASK_TRIANGULAR_CELL;
+
+			grid->getNeighborhood(neighborhood, x, y, false, shouldLoopHorizontally, shouldLoopVertically);
+
+			if (ant * IS_TRIANGULAR_ANT)
+			{
+				cell ^= MASK_TRIANGULAR_CELL;
+			}
+
+			if ((x + y) % 2 == 0)
+			{
+				if ((neighborhood[NEIGHBOR_TRIANGULAR_NE] & IS_TRIANGULAR_ANT) && isAntComingToThisUpTriangle(1, 0, neighborhood[NEIGHBOR_TRIANGULAR_NE]))
+				{
+					++numAnts;
+					ant = neighborhood[NEIGHBOR_TRIANGULAR_NE] & MASK_TRIANGULAR_ANT;
+					facing = STATE_TRIANGULAR_W;
+				}
+
+				if ((neighborhood[NEIGHBOR_TRIANGULAR_NW] & IS_TRIANGULAR_ANT) && isAntComingToThisUpTriangle(-1, 0, neighborhood[NEIGHBOR_TRIANGULAR_NW]))
+				{
+					++numAnts;
+					ant = neighborhood[NEIGHBOR_TRIANGULAR_NW] & MASK_TRIANGULAR_ANT;
+					facing = STATE_TRIANGULAR_E;
+				}
+
+				if ((neighborhood[NEIGHBOR_TRIANGULAR_S] & IS_TRIANGULAR_ANT) && isAntComingToThisUpTriangle(0, 1, neighborhood[NEIGHBOR_TRIANGULAR_S]))
+				{
+					++numAnts;
+					ant = neighborhood[NEIGHBOR_TRIANGULAR_S] & MASK_TRIANGULAR_ANT;
+					facing = STATE_TRIANGULAR_NS;
+				}
+			}
+			else
+			{
+				if ((neighborhood[NEIGHBOR_TRIANGULAR_N] & IS_TRIANGULAR_ANT) && isAntComingToThisDownTriangle(0, -1, neighborhood[NEIGHBOR_TRIANGULAR_N]))
+				{
+					++numAnts;
+					ant = neighborhood[NEIGHBOR_TRIANGULAR_N] & MASK_TRIANGULAR_ANT;
+					facing = STATE_TRIANGULAR_NS;
+				}
+
+				if ((neighborhood[NEIGHBOR_TRIANGULAR_SW] & IS_TRIANGULAR_ANT) && isAntComingToThisDownTriangle(-1, 0, neighborhood[NEIGHBOR_TRIANGULAR_SW]))
+				{
+					++numAnts;
+					ant = neighborhood[NEIGHBOR_TRIANGULAR_SW] & MASK_TRIANGULAR_ANT;
+					facing = STATE_TRIANGULAR_E;
+				}
+
+				if ((neighborhood[NEIGHBOR_TRIANGULAR_SE] & IS_TRIANGULAR_ANT) && isAntComingToThisDownTriangle(1, 0, neighborhood[NEIGHBOR_TRIANGULAR_SE]))
+				{
+					++numAnts;
+					ant = neighborhood[NEIGHBOR_TRIANGULAR_SE] & MASK_TRIANGULAR_ANT;
+					facing = STATE_TRIANGULAR_W;
+				}
 			}
 
 			if (numAnts == 1)
@@ -231,7 +452,7 @@ int main()
 	int rulesIfOn[13] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
 	*/
 
-	///*
+	/*
 	sf::Color colors[32];
 	SquareGrid* grid;
 
@@ -258,6 +479,35 @@ int main()
 	grid = new SquareGrid(&window, 64, 64, colors);
 	grid->setCellState(STATE_SQUARE_CLOCKWISE | STATE_SQUARE_N, 21, 21);
 	grid->setCellState(STATE_SQUARE_COUNTER | STATE_SQUARE_N, 43, 43);
+	*/
+
+	///*
+	sf::Color colors[32];
+	TriangularGrid* grid;
+
+	for (int state = 0; state < 32; ++state)
+	{
+		if ((state & MASK_SQUARE_ANT) == STATE_SQUARE_CLOCKWISE)
+		{
+			colors[state] = sf::Color(255, 0, 0);
+		}
+		else if ((state & MASK_SQUARE_ANT) == STATE_SQUARE_COUNTER)
+		{
+			colors[state] = sf::Color(0, 0, 255);
+		}
+		else if ((state & MASK_SQUARE_CELL) == STATE_SQUARE_ON)
+		{
+			colors[state] = sf::Color(255, 255, 255);
+		}
+		else
+		{
+			colors[state] = sf::Color(63, 63, 63);
+		}
+	}
+
+	grid = new TriangularGrid(&window, 64, 64, colors);
+	grid->setCellState(STATE_TRIANGULAR_CLOCKWISE | STATE_TRIANGULAR_NS, 21, 21);
+	grid->setCellState(STATE_TRIANGULAR_COUNTER | STATE_TRIANGULAR_NS, 43, 43);
 	//*/
 
 	while (window.isOpen())
