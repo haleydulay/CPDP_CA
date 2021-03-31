@@ -53,6 +53,7 @@ int main()
 	sf::RenderWindow window(sf::VideoMode(sf::VideoMode::getDesktopMode().width - 100, sf::VideoMode::getDesktopMode().height - 100), "COP5570 Term Project", sf::Style::Close | sf::Style::Titlebar);
 	bool isUnpaused = false;
 	bool shouldStep = false;
+	int numStepsPerFrame = 1;
 
 	sf::Color colors[2] = {sf::Color(63, 63, 63), sf::Color(255, 255, 255)};
 	bool isMooreNeighborhood = true;
@@ -97,7 +98,11 @@ int main()
 					break;
 
 				case sf::Keyboard::Return:
-					shouldStep = true;
+					if (!isUnpaused)
+					{
+						shouldStep = true;
+					}
+
 					break;
 
 				default:
@@ -111,7 +116,14 @@ int main()
 			}
 		}
 
-		if (isUnpaused || shouldStep)
+		if (isUnpaused)
+		{
+			for (int step = 0; step < numStepsPerFrame; ++step)
+			{
+				updateOuterTotalisticCellularAutomaton((Grid*)grid, rulesIfOff, rulesIfOn, isMooreNeighborhood, shouldLoopHorizontally, shouldLoopVertically);
+			}
+		}
+		else if (shouldStep)
 		{
 			updateOuterTotalisticCellularAutomaton((Grid*)grid, rulesIfOff, rulesIfOn, isMooreNeighborhood, shouldLoopHorizontally, shouldLoopVertically);
 			shouldStep = false;
