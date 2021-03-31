@@ -32,6 +32,37 @@ const int STATE_SQUARE_N = 8;
 const int STATE_SQUARE_W = 16;
 const int STATE_SQUARE_S = 24;
 
+//hexagonal grids
+//neighbor
+const int NEIGHBOR_HEXAGONAL_E = 4;
+const int NEIGHBOR_HEXAGONAL_NE = 1;
+const int NEIGHBOR_HEXAGONAL_NW = 0;
+const int NEIGHBOR_HEXAGONAL_W = 2;
+const int NEIGHBOR_HEXAGONAL_SW = 5;
+const int NEIGHBOR_HEXAGONAL_SE = 6;
+
+//cell
+const int MASK_HEXAGONAL_CELL = 1;
+const int STATE_HEXAGONAL_ON = 1;
+
+//ant
+const int IS_HEXAGONAL_ANT = 8;
+const int REVERSE_HEXAGONAL_ANT = 6;
+const int MASK_HEXAGONAL_ANT = 14;
+const int STATE_HEXAGONAL_SHARPCLOCKWISE = 8;
+const int STATE_HEXAGONAL_SLIGHTCLOCKWISE = 10;
+const int STATE_HEXAGONAL_SLIGHTCOUNTER = 12;
+const int STATE_HEXAGONAL_SHARPCOUNTER = 14;
+
+//facing
+const int MASK_HEXAGONAL_FACING = 112;
+const int STATE_HEXAGONAL_E = 0;
+const int STATE_HEXAGONAL_NE = 16;
+const int STATE_HEXAGONAL_NW = 32;
+const int STATE_HEXAGONAL_W = 48;
+const int STATE_HEXAGONAL_SW = 64;
+const int STATE_HEXAGONAL_SE = 80;
+
 //triangular grids
 //neighbor
 const int NEIGHBOR_TRIANGULAR_NE = 2;
@@ -210,6 +241,261 @@ void updateLangtonsAntAutomaton(SquareGrid* grid, bool shouldLoopHorizontally, b
 				++numAnts;
 				ant = neighborhood[NEIGHBOR_SQUARE_S] & MASK_SQUARE_ANT;
 				facing = STATE_SQUARE_N;
+			}
+
+			if (numAnts == 1)
+			{
+				grid->setCellState(facing | ant | cell, x, y);
+			}
+			else
+			{
+				grid->setCellState(cell, x, y);
+			}
+		}
+	}
+}
+
+//checks if ant at (x, y) with state state will be at (0, 0) on next time step
+//used on hexagonal grids
+bool isAntComingToThisHexagon(int x, int y, int state, int otherRowEastOffset)
+{
+	int ant = state & MASK_HEXAGONAL_ANT;
+
+	//ants move in the opposite direction when the cell is on
+	if ((state & MASK_HEXAGONAL_CELL) == STATE_HEXAGONAL_ON)
+	{
+		ant ^= REVERSE_HEXAGONAL_ANT;
+	}
+
+	switch (ant)
+	{
+	case STATE_HEXAGONAL_SHARPCLOCKWISE:
+		switch (state & MASK_HEXAGONAL_FACING)
+		{
+		case STATE_HEXAGONAL_E:
+			++y;
+			x += otherRowEastOffset - 1;
+			break;
+
+		case STATE_HEXAGONAL_NE:
+			++y;
+			x += otherRowEastOffset;
+			break;
+
+		case STATE_HEXAGONAL_NW:
+			++x;
+			break;
+
+		case STATE_HEXAGONAL_W:
+			--y;
+			x += otherRowEastOffset;
+			break;
+
+		case STATE_HEXAGONAL_SW:
+			--y;
+			x += otherRowEastOffset - 1;
+			break;
+
+		case STATE_HEXAGONAL_SE:
+			--x;
+			break;
+
+		default:
+			break;
+		}
+
+		break;
+
+	case STATE_HEXAGONAL_SLIGHTCLOCKWISE:
+		switch (state & MASK_HEXAGONAL_FACING)
+		{
+		case STATE_HEXAGONAL_E:
+			++y;
+			x += otherRowEastOffset;
+			break;
+
+		case STATE_HEXAGONAL_NE:
+			++x;
+			break;
+
+		case STATE_HEXAGONAL_NW:
+			--y;
+			x += otherRowEastOffset;
+			break;
+
+		case STATE_HEXAGONAL_W:
+			--y;
+			x += otherRowEastOffset - 1;
+			break;
+
+		case STATE_HEXAGONAL_SW:
+			--x;
+			break;
+
+		case STATE_HEXAGONAL_SE:
+			++y;
+			x += otherRowEastOffset - 1;
+			break;
+
+		default:
+			break;
+		}
+
+		break;
+
+	case STATE_HEXAGONAL_SLIGHTCOUNTER:
+		switch (state & MASK_HEXAGONAL_FACING)
+		{
+		case STATE_HEXAGONAL_E:
+			--y;
+			x += otherRowEastOffset;
+			break;
+
+		case STATE_HEXAGONAL_NE:
+			--y;
+			x += otherRowEastOffset - 1;
+			break;
+
+		case STATE_HEXAGONAL_NW:
+			--x;
+			break;
+
+		case STATE_HEXAGONAL_W:
+			++y;
+			x += otherRowEastOffset - 1;
+			break;
+
+		case STATE_HEXAGONAL_SW:
+			++y;
+			x += otherRowEastOffset;
+			break;
+
+		case STATE_HEXAGONAL_SE:
+			++x;
+			break;
+
+		default:
+			break;
+		}
+
+		break;
+
+	case STATE_HEXAGONAL_SHARPCOUNTER:
+		switch (state & MASK_HEXAGONAL_FACING)
+		{
+		case STATE_HEXAGONAL_E:
+			--y;
+			x += otherRowEastOffset - 1;
+			break;
+
+		case STATE_HEXAGONAL_NE:
+			--x;
+			break;
+
+		case STATE_HEXAGONAL_NW:
+			++y;
+			x += otherRowEastOffset - 1;
+			break;
+
+		case STATE_HEXAGONAL_W:
+			++y;
+			x += otherRowEastOffset;
+			break;
+
+		case STATE_HEXAGONAL_SW:
+			++x;
+			break;
+
+		case STATE_HEXAGONAL_SE:
+			--y;
+			x += otherRowEastOffset;
+			break;
+
+		default:
+			break;
+		}
+
+		break;
+
+	default:
+		break;
+	}
+
+	return x == 0 && y == 0;
+}
+
+//does one time step for a cellular automaton based on Langton's Ant
+//used on hexagonal grids
+//ant rotates, recolors cell, and moves forward
+//ants die if they stop on the same space
+//state is 7 bits: FFFAAAC
+//C0 = cell is off, C1 = cell is on
+//AA0** = no ant, A100 = sharp clockwise ant, A101 = slight clockwise ant, AA110 = slight counter-clockwise ant, AA111 = sharp counter-clockwise ant
+//FF000 = facing E, FF001 = facing NE, FF010 = facing NW, FF011 = facing W, FF100 = facing SW, FF101 = facing SE, FF11* = undefined
+void updateLangtonsAntAutomaton(HexagonalGrid* grid, bool shouldLoopHorizontally, bool shouldLoopVertically)
+{
+	grid->toggleGrid();
+
+	for (int x = 0; x < grid->WIDTH; ++x)
+	{
+		for (int y = 0; y < grid->HEIGHT; ++y)
+		{
+			int neighborhood[13] = {0};
+			int state = grid->getCellState(x, y);
+			int numAnts = 0;
+			int ant = state & MASK_HEXAGONAL_ANT;
+			int facing = 0;
+			int cell = state & MASK_HEXAGONAL_CELL;
+			int otherRowEastOffset = y % 2;
+			int otherRowWestOffset = otherRowEastOffset - 1;
+
+			grid->getNeighborhood(neighborhood, x, y, false, shouldLoopHorizontally, shouldLoopVertically);
+
+			if (ant & IS_HEXAGONAL_ANT)
+			{
+				cell ^= MASK_HEXAGONAL_CELL;
+			}
+
+			if ((neighborhood[NEIGHBOR_HEXAGONAL_E] & IS_HEXAGONAL_ANT) && isAntComingToThisHexagon(1, 0, neighborhood[NEIGHBOR_HEXAGONAL_E], otherRowEastOffset))
+			{
+				++numAnts;
+				ant = neighborhood[NEIGHBOR_HEXAGONAL_E] & MASK_HEXAGONAL_ANT;
+				facing = STATE_HEXAGONAL_W;
+			}
+
+			if ((neighborhood[NEIGHBOR_HEXAGONAL_NE] & IS_HEXAGONAL_ANT) && isAntComingToThisHexagon(otherRowEastOffset, -1, neighborhood[NEIGHBOR_HEXAGONAL_NE], 1 - otherRowEastOffset))
+			{
+				++numAnts;
+				ant = neighborhood[NEIGHBOR_HEXAGONAL_NE] & MASK_HEXAGONAL_ANT;
+				facing = STATE_HEXAGONAL_SW;
+			}
+
+			if ((neighborhood[NEIGHBOR_HEXAGONAL_NW] & IS_HEXAGONAL_ANT) && isAntComingToThisHexagon(otherRowWestOffset, -1, neighborhood[NEIGHBOR_HEXAGONAL_NW], 1 - otherRowEastOffset))
+			{
+				++numAnts;
+				ant = neighborhood[NEIGHBOR_HEXAGONAL_NW] & MASK_HEXAGONAL_ANT;
+				facing = STATE_HEXAGONAL_SE;
+			}
+
+			if ((neighborhood[NEIGHBOR_HEXAGONAL_W] & IS_HEXAGONAL_ANT) && isAntComingToThisHexagon(-1, 0, neighborhood[NEIGHBOR_HEXAGONAL_W], otherRowEastOffset))
+			{
+				++numAnts;
+				ant = neighborhood[NEIGHBOR_HEXAGONAL_W] & MASK_HEXAGONAL_ANT;
+				facing = STATE_HEXAGONAL_E;
+			}
+
+			if ((neighborhood[NEIGHBOR_HEXAGONAL_SW] & IS_HEXAGONAL_ANT) && isAntComingToThisHexagon(otherRowWestOffset, 1, neighborhood[NEIGHBOR_HEXAGONAL_SW], 1 - otherRowEastOffset))
+			{
+				++numAnts;
+				ant = neighborhood[NEIGHBOR_HEXAGONAL_SW] & MASK_HEXAGONAL_ANT;
+				facing = STATE_HEXAGONAL_NE;
+			}
+
+			if ((neighborhood[NEIGHBOR_HEXAGONAL_SE] & IS_HEXAGONAL_ANT) && isAntComingToThisHexagon(otherRowEastOffset, 1, neighborhood[NEIGHBOR_HEXAGONAL_SE], 1 - otherRowEastOffset))
+			{
+				++numAnts;
+				ant = neighborhood[NEIGHBOR_HEXAGONAL_SE] & MASK_HEXAGONAL_ANT;
+				facing = STATE_HEXAGONAL_NW;
 			}
 
 			if (numAnts == 1)
@@ -482,20 +768,59 @@ int main()
 	*/
 
 	///*
+	sf::Color colors[128];
+	HexagonalGrid* grid;
+
+	for (int state = 0; state < 128; ++state)
+	{
+		if ((state & MASK_HEXAGONAL_ANT) == STATE_HEXAGONAL_SHARPCLOCKWISE)
+		{
+			colors[state] = sf::Color(255, 0, 0);
+		}
+		else if ((state & MASK_HEXAGONAL_ANT) == STATE_HEXAGONAL_SLIGHTCLOCKWISE)
+		{
+			colors[state] = sf::Color(255, 255, 0);
+		}
+		else if ((state & MASK_HEXAGONAL_ANT) == STATE_HEXAGONAL_SLIGHTCOUNTER)
+		{
+			colors[state] = sf::Color(0, 255, 0);
+		}
+		else if ((state & MASK_HEXAGONAL_ANT) == STATE_HEXAGONAL_SHARPCOUNTER)
+		{
+			colors[state] = sf::Color(0, 0, 255);
+		}
+		else if ((state & MASK_HEXAGONAL_CELL) == STATE_HEXAGONAL_ON)
+		{
+			colors[state] = sf::Color(255, 255, 255);
+		}
+		else
+		{
+			colors[state] = sf::Color(63, 63, 63);
+		}
+	}
+
+	grid = new HexagonalGrid(&window, 64, 64, colors);
+	grid->setCellState(STATE_HEXAGONAL_SHARPCLOCKWISE | STATE_HEXAGONAL_E, 21, 21);
+	grid->setCellState(STATE_HEXAGONAL_SHARPCOUNTER | STATE_HEXAGONAL_E, 43, 21);
+	grid->setCellState(STATE_HEXAGONAL_SLIGHTCLOCKWISE | STATE_HEXAGONAL_E, 21, 43);
+	grid->setCellState(STATE_HEXAGONAL_SLIGHTCOUNTER | STATE_HEXAGONAL_E, 43, 43);
+	//*/
+
+	/*
 	sf::Color colors[32];
 	TriangularGrid* grid;
 
 	for (int state = 0; state < 32; ++state)
 	{
-		if ((state & MASK_SQUARE_ANT) == STATE_SQUARE_CLOCKWISE)
+		if ((state & MASK_TRIANGULAR_ANT) == STATE_TRIANGULAR_CLOCKWISE)
 		{
 			colors[state] = sf::Color(255, 0, 0);
 		}
-		else if ((state & MASK_SQUARE_ANT) == STATE_SQUARE_COUNTER)
+		else if ((state & MASK_TRIANGULAR_ANT) == STATE_TRIANGULAR_COUNTER)
 		{
 			colors[state] = sf::Color(0, 0, 255);
 		}
-		else if ((state & MASK_SQUARE_CELL) == STATE_SQUARE_ON)
+		else if ((state & MASK_TRIANGULAR_CELL) == STATE_TRIANGULAR_ON)
 		{
 			colors[state] = sf::Color(255, 255, 255);
 		}
@@ -508,7 +833,7 @@ int main()
 	grid = new TriangularGrid(&window, 64, 64, colors);
 	grid->setCellState(STATE_TRIANGULAR_CLOCKWISE | STATE_TRIANGULAR_NS, 21, 21);
 	grid->setCellState(STATE_TRIANGULAR_COUNTER | STATE_TRIANGULAR_NS, 43, 43);
-	//*/
+	*/
 
 	while (window.isOpen())
 	{
