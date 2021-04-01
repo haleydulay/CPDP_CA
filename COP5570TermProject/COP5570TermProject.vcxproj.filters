@@ -39,6 +39,15 @@
     <ClCompile Include="OuterTotalisticCA.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="LangtonsAntSquare.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LangtonsAntHexagonal.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LangtonsAntTriangular.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SquareGrid.h">
@@ -60,6 +69,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="OuterTotalisticCA.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LangtonsAntSquare.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LangtonsAntHexagonal.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LangtonsAntTriangular.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -25,6 +25,7 @@ int OuterTotalisticCA::getHeight()
 	return GRID->HEIGHT;
 }
 
+//toggles grid
 void OuterTotalisticCA::toggleGrid()
 {
 	GRID->toggleGrid();
