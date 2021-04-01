@@ -1,7 +1,9 @@
 #include <SFML/Graphics.hpp>
 #include "HexagonalGrid.h"
 #include "SquareGrid.h"
+#include "ThreadController.h"
 #include "TriangularGrid.h"
+#include "OuterTotalisticCA.h"
 
 //TODO: give the CAs their own classes?
 //TODO: parallelize them (that's the whole point of the assignment :P)
@@ -88,38 +90,6 @@ const int MASK_TRIANGULAR_FACING = 24;
 const int STATE_TRIANGULAR_E = 0;
 const int STATE_TRIANGULAR_NS = 8;
 const int STATE_TRIANGULAR_W = 16;
-
-//does one time step for an outer-totalistic cellular automaton
-void updateOuterTotalisticCellularAutomaton(Grid* grid, const int rulesIfOff[13], const int rulesIfOn[13], bool isMooreNeighborhood, bool shouldLoopHorizontally, bool shouldLoopVertically)
-{
-	grid->toggleGrid();
-
-	for (int x = 0; x < grid->WIDTH; ++x)
-	{
-		for (int y = 0; y < grid->HEIGHT; ++y)
-		{
-			int neighborhood[13] = {0};
-			int state = grid->getCellState(x, y);
-			int total = -state;	//subtract center state from total in outer-totalistic
-
-			grid->getNeighborhood(neighborhood, x, y, isMooreNeighborhood, shouldLoopHorizontally, shouldLoopVertically);
-
-			for (int neighborState : neighborhood)
-			{
-				total += neighborState;
-			}
-
-			if (state == 0)
-			{
-				grid->setCellState(rulesIfOff[total], x, y);
-			}
-			else
-			{
-				grid->setCellState(rulesIfOn[total], x, y);
-			}
-		}
-	}
-}
 
 //checks if ant at (x, y) with state state will be at (0, 0) on next time step
 //used on square grids
@@ -711,36 +681,45 @@ int main()
 	bool isUnpaused = false;
 	bool shouldStep = false;
 	int numStepsPerFrame = 1;
+	int numThreads = 4;
 
 	bool shouldLoopHorizontally = true;
 	bool shouldLoopVertically = true;
 
+	///*
+	sf::Color colors[2] = {sf::Color(63, 63, 63), sf::Color(255, 255, 255)};
+	bool isMooreNeighborhood = true;
+	SquareGrid grid(&window, 64, 64, colors);
+	int rulesIfOff[13] = {0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+	int rulesIfOn[13] = {0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+	OuterTotalisticCA cellularAutomaton(&grid, rulesIfOff, rulesIfOn, isMooreNeighborhood, shouldLoopHorizontally, shouldLoopVertically);
+	ThreadController automatonUpdater(numThreads, &cellularAutomaton);
+
+	grid.setCellState(1, 1, 0);
+	grid.setCellState(1, 2, 1);
+	grid.setCellState(1, 0, 2);
+	grid.setCellState(1, 1, 2);
+	grid.setCellState(1, 2, 2);
+	//*/
+
 	/*
 	sf::Color colors[2] = {sf::Color(63, 63, 63), sf::Color(255, 255, 255)};
 	bool isMooreNeighborhood = true;
-	*/
-
-	/*
-	SquareGrid* grid = new SquareGrid(&window, 64, 64, colors);
-	int rulesIfOff[13] = {0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-	int rulesIfOn[13] = {0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-	*/
-
-	/*
-	HexagonalGrid* grid = new HexagonalGrid(&window, 64, 64, colors);
+	HexagonalGrid grid(&window, 64, 64, colors);
 	int rulesIfOff[13] = {0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 	int rulesIfOn[13] = {0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0};
 	*/
 
 	/*
-	TriangularGrid* grid = new TriangularGrid(&window, 64, 64, colors);
+	sf::Color colors[2] = {sf::Color(63, 63, 63), sf::Color(255, 255, 255)};
+	bool isMooreNeighborhood = true;
+	TriangularGrid grid(&window, 64, 64, colors);
 	int rulesIfOff[13] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 	int rulesIfOn[13] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
 	*/
 
 	/*
 	sf::Color colors[32];
-	SquareGrid* grid;
 
 	for (int state = 0; state < 32; ++state)
 	{
@@ -762,14 +741,14 @@ int main()
 		}
 	}
 
-	grid = new SquareGrid(&window, 64, 64, colors);
-	grid->setCellState(STATE_SQUARE_CLOCKWISE | STATE_SQUARE_N, 21, 21);
-	grid->setCellState(STATE_SQUARE_COUNTER | STATE_SQUARE_N, 43, 43);
+	SquareGrid grid(&window, 64, 64, colors);
+
+	grid.setCellState(STATE_SQUARE_CLOCKWISE | STATE_SQUARE_N, 21, 21);
+	grid.setCellState(STATE_SQUARE_COUNTER | STATE_SQUARE_N, 43, 43);
 	*/
 
-	///*
+	/*
 	sf::Color colors[128];
-	HexagonalGrid* grid;
 
 	for (int state = 0; state < 128; ++state)
 	{
@@ -799,16 +778,16 @@ int main()
 		}
 	}
 
-	grid = new HexagonalGrid(&window, 64, 64, colors);
-	grid->setCellState(STATE_HEXAGONAL_SHARPCLOCKWISE | STATE_HEXAGONAL_E, 21, 21);
-	grid->setCellState(STATE_HEXAGONAL_SHARPCOUNTER | STATE_HEXAGONAL_E, 43, 21);
-	grid->setCellState(STATE_HEXAGONAL_SLIGHTCLOCKWISE | STATE_HEXAGONAL_E, 21, 43);
-	grid->setCellState(STATE_HEXAGONAL_SLIGHTCOUNTER | STATE_HEXAGONAL_E, 43, 43);
-	//*/
+	HexagonalGrid grid(&window, 64, 64, colors);
+
+	grid.setCellState(STATE_HEXAGONAL_SHARPCLOCKWISE | STATE_HEXAGONAL_E, 21, 21);
+	grid.setCellState(STATE_HEXAGONAL_SHARPCOUNTER | STATE_HEXAGONAL_E, 43, 21);
+	grid.setCellState(STATE_HEXAGONAL_SLIGHTCLOCKWISE | STATE_HEXAGONAL_E, 21, 43);
+	grid.setCellState(STATE_HEXAGONAL_SLIGHTCOUNTER | STATE_HEXAGONAL_E, 43, 43);
+	*/
 
 	/*
 	sf::Color colors[32];
-	TriangularGrid* grid;
 
 	for (int state = 0; state < 32; ++state)
 	{
@@ -830,9 +809,10 @@ int main()
 		}
 	}
 
-	grid = new TriangularGrid(&window, 64, 64, colors);
-	grid->setCellState(STATE_TRIANGULAR_CLOCKWISE | STATE_TRIANGULAR_NS, 21, 21);
-	grid->setCellState(STATE_TRIANGULAR_COUNTER | STATE_TRIANGULAR_NS, 43, 43);
+	TriangularGrid grid(&window, 64, 64, colors);
+
+	grid.setCellState(STATE_TRIANGULAR_CLOCKWISE | STATE_TRIANGULAR_NS, 21, 21);
+	grid.setCellState(STATE_TRIANGULAR_COUNTER | STATE_TRIANGULAR_NS, 43, 43);
 	*/
 
 	while (window.isOpen())
@@ -873,51 +853,50 @@ int main()
 			}
 		}
 
-		/*
-		if (isUnpaused)
-		{
-			for (int step = 0; step < numStepsPerFrame; ++step)
-			{
-				updateOuterTotalisticCellularAutomaton((Grid*)grid, rulesIfOff, rulesIfOn, isMooreNeighborhood, shouldLoopHorizontally, shouldLoopVertically);
-			}
-		}
-		else if (shouldStep)
-		{
-			updateOuterTotalisticCellularAutomaton((Grid*)grid, rulesIfOff, rulesIfOn, isMooreNeighborhood, shouldLoopHorizontally, shouldLoopVertically);
-			shouldStep = false;
-		}
-		*/
-
 		///*
 		if (isUnpaused)
 		{
 			for (int step = 0; step < numStepsPerFrame; ++step)
 			{
-				updateLangtonsAntAutomaton(grid, shouldLoopHorizontally, shouldLoopVertically);
+				automatonUpdater.activate();
 			}
 		}
 		else if (shouldStep)
 		{
-			updateLangtonsAntAutomaton(grid, shouldLoopHorizontally, shouldLoopVertically);
+			automatonUpdater.activate();
 			shouldStep = false;
 		}
 		//*/
 
+		/*
+		if (isUnpaused)
+		{
+			for (int step = 0; step < numStepsPerFrame; ++step)
+			{
+				updateLangtonsAntAutomaton(&grid, shouldLoopHorizontally, shouldLoopVertically);
+			}
+		}
+		else if (shouldStep)
+		{
+			updateLangtonsAntAutomaton(&grid, shouldLoopHorizontally, shouldLoopVertically);
+			shouldStep = false;
+		}
+		*/
+
 		if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
 		{
-			sf::Vector2i gridPosition = grid->getGridPositionAtMouse();
+			sf::Vector2i gridPosition = grid.getGridPositionAtMouse();
 
-			if (gridPosition.x > -1 && gridPosition.x < grid->WIDTH && gridPosition.y > -1 && gridPosition.y < grid->HEIGHT)
+			if (gridPosition.x > -1 && gridPosition.x < grid.WIDTH && gridPosition.y > -1 && gridPosition.y < grid.HEIGHT)
 			{
-				grid->setCellState(1, gridPosition.x, gridPosition.y);
+				grid.setCellState(1, gridPosition.x, gridPosition.y);
 			}
 		}
 
 		window.clear();
-		grid->draw();
+		grid.draw();
 		window.display();
 	}
 
-	delete grid;
 	return 0;
 }
