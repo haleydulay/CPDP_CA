@@ -20,8 +20,8 @@ public:
 	void draw();
 
 private:
-	float squareLength;				//length of a cell in pixels
-	sf::RectangleShape*** image;	//2D array of cell images
+	float squareLength;		//length of a cell in pixels
+	sf::VertexArray image;	//array of cell vertices
 
 	void getMooreNeighborhood(int neighborhood[13], int x, int y, bool shouldLoopHorizontally, bool shouldLoopVertically);
 	void getVonNeumannNeighborhood(int neighborhood[13], int x, int y, bool shouldLoopHorizontally, bool shouldLoopVertically);

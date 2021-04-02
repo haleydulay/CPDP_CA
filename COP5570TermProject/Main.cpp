@@ -17,7 +17,7 @@ int main()
 	bool shouldLoopHorizontally = true;
 	bool shouldLoopVertically = true;
 
-	/*
+	///*
 	sf::Color colors[2] = {sf::Color(63, 63, 63), sf::Color(255, 255, 255)};
 	bool isMooreNeighborhood = true;
 	SquareGrid grid(&window, 64, 64, colors);
@@ -25,7 +25,13 @@ int main()
 	int rulesIfOn[13] = {0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 	OuterTotalisticCA cellularAutomaton(&grid, rulesIfOff, rulesIfOn, isMooreNeighborhood, shouldLoopHorizontally, shouldLoopVertically);
 	ThreadController automatonUpdater(numThreads, &cellularAutomaton);
-	*/
+
+	grid.setCellState(1, 1, 0);
+	grid.setCellState(1, 2, 1);
+	grid.setCellState(1, 0, 2);
+	grid.setCellState(1, 1, 2);
+	grid.setCellState(1, 2, 2);
+	//*/
 
 	/*
 	sf::Color colors[2] = {sf::Color(63, 63, 63), sf::Color(255, 255, 255)};
@@ -119,7 +125,7 @@ int main()
 	grid.setCellState(STATE_HEXAGONAL_SLIGHTCOUNTER | STATE_HEXAGONAL_E, 43, 43);
 	*/
 
-	///*
+	/*
 	sf::Color colors[32];
 
 	for (int state = 0; state < 32; ++state)
@@ -148,7 +154,7 @@ int main()
 
 	grid.setCellState(STATE_TRIANGULAR_CLOCKWISE | STATE_TRIANGULAR_NS, 21, 21);
 	grid.setCellState(STATE_TRIANGULAR_COUNTER | STATE_TRIANGULAR_NS, 43, 43);
-	//*/
+	*/
 
 	while (window.isOpen())
 	{

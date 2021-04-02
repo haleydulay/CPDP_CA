@@ -1,27 +1,25 @@
 #include "ThreadController.h"
 
-bool didFinish;	//boolean to control whether main loop waits for time step to finish
-
-//returns didFinish
-bool shouldSkipOverWait()
-{
-	return didFinish;
-}
+std::vector<bool> didStart;	//vector of booleans to control whether threads wait for time step to start
+bool didFinish;				//boolean to control whether main loop waits for time step to finish
 
 //outer totalistic CA constructor
 //initializes member variables
 ThreadController::ThreadController(int numThreads, CellularAutomaton* cellularAutomaton) : CELLULAR_AUTOMATON(cellularAutomaton)
 {
-	control = 0;
+	numFinished = 0;
+	numStarted = 0;
 	didFinish = false;
 
 	shouldThreadsContinue = true;
 	this->numThreads = numThreads;
+	didStart.resize(numThreads);
 	threads = new std::thread*[numThreads];
 
 	for (int n = 0; n < numThreads; ++n)
 	{
-		threads[n] = new std::thread(&ThreadController::wrapper, this, (n * CELLULAR_AUTOMATON->getWidth()) / numThreads, 0, ((n + 1) * CELLULAR_AUTOMATON->getWidth()) / numThreads, CELLULAR_AUTOMATON->getHeight());
+		didStart[n] = false;
+		threads[n] = new std::thread(&ThreadController::wrapper, this, n, (n * CELLULAR_AUTOMATON->getWidth()) / numThreads, 0, ((n + 1) * CELLULAR_AUTOMATON->getWidth()) / numThreads, CELLULAR_AUTOMATON->getHeight());
 	}
 }
 
@@ -59,68 +57,105 @@ void ThreadController::setNumThreads(int numThreads)
 
 	shouldThreadsContinue = true;
 	this->numThreads = numThreads;
+	didStart.resize(numThreads);
 	threads = new std::thread*[numThreads];
 
 	for (int n = 0; n < numThreads; ++n)
 	{
-		threads[n] = new std::thread(&ThreadController::wrapper, this, 0, 0, CELLULAR_AUTOMATON->getWidth(), CELLULAR_AUTOMATON->getHeight());
+		didStart[n] = false;
+		threads[n] = new std::thread(&ThreadController::wrapper, this, n, 0, 0, CELLULAR_AUTOMATON->getWidth(), CELLULAR_AUTOMATON->getHeight());
 	}
 }
 
-//increments control variable
-//activates finish condition and resets control variable when all threads are done with this time step
-void ThreadController::incrementControl()
-{
-	controlMutex.lock();
-
-	if (++control >= numThreads)
-	{
-		finishMutex.lock();
-		
-		didFinish = true;
-
-		finishMutex.unlock();
-
-		finish.notify_all();
-		control = 0;
-	}
-
-	controlMutex.unlock();
-}
-
-//tells threads to run time step and waits for time step to finish
+//tells threads to run time step
+//waits for threads to finish
 void ThreadController::activate(bool isKill)
 {
 	CELLULAR_AUTOMATON->toggleGrid();
+
+	numStartedMutex.lock();
+	startMutex.lock();
+	
+	for (int n = 0; n < numThreads; ++n)
+	{
+		didStart[n] = true;
+	}
+
 	start.notify_all();
+	numStarted = 0;
+	startMutex.unlock();
+	numStartedMutex.unlock();
 
 	if (!isKill)
 	{
-		std::unique_lock<std::mutex> lock(finishMutex);
-		finish.wait(lock, shouldSkipOverWait);
+		waitForFinish();
 	}
 
 	didFinish = false;
 }
 
 //waits until work should start
-void ThreadController::waitForStart()
+void ThreadController::waitForStart(int threadIndex)
 {
 	std::unique_lock<std::mutex> lock(startMutex);
-	start.wait(lock);
+
+	start.wait(lock, [threadIndex]
+	{
+		return didStart[threadIndex];
+	});
+}
+
+//waits until work is finished
+void ThreadController::waitForFinish()
+{
+	std::unique_lock<std::mutex> lock(finishMutex);
+
+	finish.wait(lock, []
+	{
+		return didFinish;
+	});
+}
+
+//increments numStarted
+//clears start condition for current thread
+void ThreadController::incrementNumStarted(int threadIndex)
+{
+	numStartedMutex.lock();
+	++numStarted;
+	didStart[threadIndex] = false;
+	numStartedMutex.unlock();
+}
+
+//increments numFinished
+//sets finish condition and resets numFinished when all threads are done with this time step
+void ThreadController::incrementNumFinished()
+{
+	numFinishedMutex.lock();
+
+	if (++numFinished >= numThreads)
+	{
+		finishMutex.lock();
+		didFinish = true;
+		finish.notify_all();
+		numFinished = 0;
+		finishMutex.unlock();
+	}
+
+	numFinishedMutex.unlock();
 }
 
 //wrapper function for threads to update cellular automaton
 //waits for start condition before starting
-//increments control variable after finishing
-void ThreadController::wrapper(int minX, int minY, int maxX, int maxY)
+//increments numFinished after finishing
+void ThreadController::wrapper(int threadIndex, int minX, int minY, int maxX, int maxY)
 {
-	waitForStart();
+	waitForStart(threadIndex);
 
 	while (shouldThreadsContinue)
 	{
+		incrementNumStarted(threadIndex);
 		CELLULAR_AUTOMATON->update(minX, minY, maxX, maxY);
-		incrementControl();
-		waitForStart();
+		incrementNumFinished();
+		waitForStart(threadIndex);
 	}
 }
