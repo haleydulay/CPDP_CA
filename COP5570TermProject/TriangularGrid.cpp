@@ -25,29 +25,32 @@ TriangularGrid::TriangularGrid(sf::RenderWindow* window, int width, int height, 
 
 	gridA = new int*[WIDTH];
 	gridB = new int*[WIDTH];
-	image = new sf::CircleShape**[WIDTH];
+	image = sf::VertexArray(sf::Triangles, 3 * WIDTH * HEIGHT);
 
 	for (int x = 0; x < WIDTH; ++x)
 	{
 		gridA[x] = new int[HEIGHT];
 		gridB[x] = new int[HEIGHT];
-		image[x] = new sf::CircleShape*[HEIGHT];
 
 		for (int y = 0; y < HEIGHT; ++y)
 		{
+			float offX = x * 0.5f * pixelsPerBase;
+			float offY = y * pixelsPerHeight;
+
 			gridA[x][y] = 0;
 			gridB[x][y] = 0;
-			image[x][y] = new sf::CircleShape(circleRadius, 3);
-			image[x][y]->setFillColor(COLORS[0]);
 
 			if ((x + y) % 2 == 0)
 			{
-				image[x][y]->setPosition(x * pixelsPerBase / 2.0f, y * pixelsPerHeight);
+				image[(HEIGHT * x + y) * 3] = sf::Vertex(sf::Vector2f(offX + 0.5f * pixelsPerBase, offY), COLORS[0]);					//N
+				image[(HEIGHT * x + y) * 3 + 1] = sf::Vertex(sf::Vector2f(offX + pixelsPerBase, offY + pixelsPerHeight), COLORS[0]);	//SE
+				image[(HEIGHT * x + y) * 3 + 2] = sf::Vertex(sf::Vector2f(offX, offY + pixelsPerHeight), COLORS[0]);					//SW
 			}
 			else
 			{
-				image[x][y]->setRotation(180.0f);
-				image[x][y]->setPosition(x * pixelsPerBase / 2.0f + 2.0f * circleRadius, y * pixelsPerHeight + pixelsPerHeight);
+				image[(HEIGHT * x + y) * 3] = sf::Vertex(sf::Vector2f(offX, offY), COLORS[0]);												//NW
+				image[(HEIGHT * x + y) * 3 + 1] = sf::Vertex(sf::Vector2f(offX + pixelsPerBase, offY), COLORS[0]);							//NE
+				image[(HEIGHT * x + y) * 3 + 2] = sf::Vertex(sf::Vector2f(offX + 0.5f * pixelsPerBase, offY + pixelsPerHeight), COLORS[0]);	//S
 			}
 		}
 	}
@@ -59,19 +62,12 @@ TriangularGrid::~TriangularGrid()
 {
 	for (int x = 0; x < WIDTH; ++x)
 	{
-		for (int y = 0; y < HEIGHT; ++y)
-		{
-			delete image[x][y];
-		}
-
 		delete[] gridA[x];
 		delete[] gridB[x];
-		delete[] image[x];
 	}
 
 	delete[] gridA;
 	delete[] gridB;
-	delete[] image;
 }
 
 //returns grid[x][y]
@@ -99,7 +95,9 @@ void TriangularGrid::setCellState(int state, int x, int y)
 		gridA[x][y] = state;
 	}
 
-	image[x][y]->setFillColor(COLORS[state]);
+	image[(HEIGHT * x + y) * 3].color = COLORS[state];
+	image[(HEIGHT * x + y) * 3 + 1].color = COLORS[state];
+	image[(HEIGHT * x + y) * 3 + 2].color = COLORS[state];
 }
 
 //puts the states of the cells in the neighborhood of the cell at (x, y) in the neighborhood array
@@ -188,13 +186,7 @@ sf::Vector2i TriangularGrid::getGridPositionAtMouse()
 //draws cells
 void TriangularGrid::draw()
 {
-	for (int x = 0; x < WIDTH; ++x)
-	{
-		for (int y = 0; y < HEIGHT; ++y)
-		{
-			WINDOW->draw(*image[x][y]);
-		}
-	}
+	WINDOW->draw(image);
 }
 
 //puts the states of the cells in the Moore neighborhood of the upward-pointing cell at (x, y) in the neighborhood array
