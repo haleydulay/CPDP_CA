@@ -23,7 +23,7 @@ public:
 private:
 	float pixelsPerInradius;		//half the width of a cell in pixels
 	float pixelsPerCircumradius;	//half the height of a cell in pixels
-	sf::CircleShape*** image;		//2D array of cell images
+	sf::VertexArray image;			//array of cell vertices
 
 	sf::Vector3f getCubeCoordsAtMouse();
 	sf::Vector3i roundCubeCoords(const sf::Vector3f& coords);

@@ -24,21 +24,39 @@ HexagonalGrid::HexagonalGrid(sf::RenderWindow* window, int width, int height, sf
 
 	gridA = new int*[WIDTH];
 	gridB = new int*[WIDTH];
-	image = new sf::CircleShape**[WIDTH];
+	image = sf::VertexArray(sf::Triangles, 18 * WIDTH * HEIGHT);
 
 	for (int x = 0; x < WIDTH; ++x)
 	{
 		gridA[x] = new int[HEIGHT];
 		gridB[x] = new int[HEIGHT];
-		image[x] = new sf::CircleShape*[HEIGHT];
 
 		for (int y = 0; y < HEIGHT; ++y)
 		{
+			float offX = (y % 2 == 0) ? (x * 2.0f * pixelsPerInradius) : ((x * 2.0f + 1.0f) * pixelsPerInradius);
+			float offY = y * 1.5f * pixelsPerCircumradius;
+
 			gridA[x][y] = 0;
 			gridB[x][y] = 0;
-			image[x][y] = new sf::CircleShape(circleRadius, 6);
-			image[x][y]->setPosition((y % 2 == 0) ? (x * 2.0f * pixelsPerInradius) : ((x * 2.0f + 1.0f) * pixelsPerInradius), y * 1.5f * pixelsPerCircumradius);
-			image[x][y]->setFillColor(COLORS[0]);
+
+			image[(HEIGHT * x + y) * 18] = sf::Vertex(sf::Vector2f(offX + pixelsPerInradius, offY + pixelsPerCircumradius), COLORS[0]);						//C
+			image[(HEIGHT * x + y) * 18 + 1] = sf::Vertex(sf::Vector2f(offX + pixelsPerInradius, offY), COLORS[0]);											//N
+			image[(HEIGHT * x + y) * 18 + 2] = sf::Vertex(sf::Vector2f(offX + 2.0f * pixelsPerInradius, offY + 0.5f * pixelsPerCircumradius), COLORS[0]);	//NE
+			image[(HEIGHT * x + y) * 18 + 3] = sf::Vertex(sf::Vector2f(offX + pixelsPerInradius, offY + pixelsPerCircumradius), COLORS[0]);					//C
+			image[(HEIGHT * x + y) * 18 + 4] = sf::Vertex(sf::Vector2f(offX + 2.0f * pixelsPerInradius, offY + 0.5f * pixelsPerCircumradius), COLORS[0]);	//NE
+			image[(HEIGHT * x + y) * 18 + 5] = sf::Vertex(sf::Vector2f(offX + 2.0f * pixelsPerInradius, offY + 1.5f * pixelsPerCircumradius), COLORS[0]);	//SE
+			image[(HEIGHT * x + y) * 18 + 6] = sf::Vertex(sf::Vector2f(offX + pixelsPerInradius, offY + pixelsPerCircumradius), COLORS[0]);					//C
+			image[(HEIGHT * x + y) * 18 + 7] = sf::Vertex(sf::Vector2f(offX + 2.0f * pixelsPerInradius, offY + 1.5f * pixelsPerCircumradius), COLORS[0]);	//SE
+			image[(HEIGHT * x + y) * 18 + 8] = sf::Vertex(sf::Vector2f(offX + pixelsPerInradius, offY + 2.0f * pixelsPerCircumradius), COLORS[0]);			//S
+			image[(HEIGHT * x + y) * 18 + 9] = sf::Vertex(sf::Vector2f(offX + pixelsPerInradius, offY + pixelsPerCircumradius), COLORS[0]);					//C
+			image[(HEIGHT * x + y) * 18 + 10] = sf::Vertex(sf::Vector2f(offX + pixelsPerInradius, offY + 2.0f * pixelsPerCircumradius), COLORS[0]);			//S
+			image[(HEIGHT * x + y) * 18 + 11] = sf::Vertex(sf::Vector2f(offX, offY + 1.5f * pixelsPerCircumradius), COLORS[0]);								//SW
+			image[(HEIGHT * x + y) * 18 + 12] = sf::Vertex(sf::Vector2f(offX + pixelsPerInradius, offY + pixelsPerCircumradius), COLORS[0]);					//C
+			image[(HEIGHT * x + y) * 18 + 13] = sf::Vertex(sf::Vector2f(offX, offY + 1.5f * pixelsPerCircumradius), COLORS[0]);								//SW
+			image[(HEIGHT * x + y) * 18 + 14] = sf::Vertex(sf::Vector2f(offX, offY + 0.5f * pixelsPerCircumradius), COLORS[0]);								//NW
+			image[(HEIGHT * x + y) * 18 + 15] = sf::Vertex(sf::Vector2f(offX + pixelsPerInradius, offY + pixelsPerCircumradius), COLORS[0]);					//C
+			image[(HEIGHT * x + y) * 18 + 16] = sf::Vertex(sf::Vector2f(offX, offY + 0.5f * pixelsPerCircumradius), COLORS[0]);								//NW
+			image[(HEIGHT * x + y) * 18 + 17] = sf::Vertex(sf::Vector2f(offX + pixelsPerInradius, offY), COLORS[0]);											//N
 		}
 	}
 }
@@ -49,19 +67,12 @@ HexagonalGrid::~HexagonalGrid()
 {
 	for (int x = 0; x < WIDTH; ++x)
 	{
-		for (int y = 0; y < HEIGHT; ++y)
-		{
-			delete image[x][y];
-		}
-
 		delete[] gridA[x];
 		delete[] gridB[x];
-		delete[] image[x];
 	}
 
 	delete[] gridA;
 	delete[] gridB;
-	delete[] image;
 }
 
 //returns grid[x][y]
@@ -89,7 +100,10 @@ void HexagonalGrid::setCellState(int state, int x, int y)
 		gridA[x][y] = state;
 	}
 
-	image[x][y]->setFillColor(COLORS[state]);
+	for (int v = 0; v < 18; ++v)
+	{
+		image[(HEIGHT * x + y) * 18 + v].color = COLORS[state];
+	}
 }
 
 //puts the states of the cells in the neighborhood of the cell at (x, y) in the neighborhood array
@@ -164,13 +178,7 @@ sf::Vector2i HexagonalGrid::getGridPositionAtMouse()
 //draws cells
 void HexagonalGrid::draw()
 {
-	for (int x = 0; x < WIDTH; ++x)
-	{
-		for (int y = 0; y < HEIGHT; ++y)
-		{
-			WINDOW->draw(*image[x][y]);
-		}
-	}
+	WINDOW->draw(image);
 }
 
 //gets cube coordinates at mouse position
