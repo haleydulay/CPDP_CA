@@ -88,6 +88,18 @@ void initializeOtMenuButtons(sf::RenderWindow &window, TextBox &pencilButton, Te
 	}
 }
 
+//initializes Langton's Ant buttons
+void initializeLaMenuButtons(sf::RenderWindow &window, TextBox &cellButton, TextBox &antButton, TextBox &facingButton)
+{
+	cellButton.setSize(window.getSize().x * 0.25f, window.getSize().y * 0.125f, 20);
+	antButton.setSize(window.getSize().x * 0.25f, window.getSize().y * 0.125f, 20);
+	facingButton.setSize(window.getSize().x * 0.25f, window.getSize().y * 0.125f, 20);
+	
+	cellButton.setPosition(window.getSize().x * 0.75f, window.getSize().y * 0.5f);
+	antButton.setPosition(window.getSize().x * 0.75f, window.getSize().y * 0.625f);
+	facingButton.setPosition(window.getSize().x * 0.75f, window.getSize().y * 0.75f);
+}
+
 //uses main menu data to initialize next screen
 //outer-totalistic version
 void initializeOuterTotalisticCa(sf::RenderWindow &window, int numThreads, bool isMooreNeighborhood, bool shouldLoopHorizontally, bool shouldLoopVertically, GRID gridType, int width, int height, Grid* &grid, CellularAutomaton* &cellularAutomaton, ThreadController* &automatonUpdater, sf::Color colors[128], int rulesIfOff[13], int rulesIfOn[13])
@@ -167,7 +179,6 @@ void initializeLangtonsAntCa(sf::RenderWindow &window, int numThreads, bool shou
 
 		grid = new SquareGrid(&window, width, height, colors);
 		cellularAutomaton = new LangtonsAntSquare((SquareGrid*)grid, shouldLoopHorizontally, shouldLoopVertically);
-		grid->setCellState(STATE_SQUARE_CLOCKWISE | STATE_SQUARE_N, width / 2, height / 2);
 		break;
 
 	case HEXAGONAL:
@@ -201,7 +212,6 @@ void initializeLangtonsAntCa(sf::RenderWindow &window, int numThreads, bool shou
 
 		grid = new HexagonalGrid(&window, width, height, colors);
 		cellularAutomaton = new LangtonsAntHexagonal((HexagonalGrid*)grid, shouldLoopHorizontally, shouldLoopVertically);
-		grid->setCellState(STATE_HEXAGONAL_SLIGHTCLOCKWISE | STATE_HEXAGONAL_E, width / 2, height / 2);
 		break;
 
 	case TRIANGULAR:
@@ -227,7 +237,6 @@ void initializeLangtonsAntCa(sf::RenderWindow &window, int numThreads, bool shou
 
 		grid = new TriangularGrid(&window, width, height, colors);
 		cellularAutomaton = new LangtonsAntTriangular((TriangularGrid*)grid, shouldLoopHorizontally, shouldLoopVertically);
-		grid->setCellState(STATE_TRIANGULAR_CLOCKWISE | STATE_TRIANGULAR_NS, width / 2, height / 2);
 		break;
 
 	default:
@@ -255,6 +264,182 @@ void initializeCellularAutomaton(sf::RenderWindow &window, int numThreads, bool 
 	}
 }
 
+//cycles through ant types
+void advanceAnt(GRID gridType, int &antState, TextBox &antButton)
+{
+	switch (gridType)
+	{
+	case SQUARE:
+		switch (antState)
+		{
+		case STATE_SQUARE_CLOCKWISE:
+			antState = 0;
+			antButton.setString("No Ant");
+			break;
+
+		case STATE_SQUARE_COUNTER:
+			antState = STATE_SQUARE_CLOCKWISE;
+			antButton.setString("Clockwise Ant");
+			break;
+
+		default:
+			antState = STATE_SQUARE_COUNTER;
+			antButton.setString("Counterclockwise Ant");
+			break;
+		}
+
+		break;
+
+	case HEXAGONAL:
+		switch (antState)
+		{
+		case STATE_HEXAGONAL_SHARPCOUNTER:
+			antState = STATE_HEXAGONAL_SLIGHTCOUNTER;
+			antButton.setString("Slight Left Ant");
+			break;
+
+		case STATE_HEXAGONAL_SLIGHTCOUNTER:
+			antState = STATE_HEXAGONAL_SLIGHTCLOCKWISE;
+			antButton.setString("Slight Right Ant");
+			break;
+
+		case STATE_HEXAGONAL_SLIGHTCLOCKWISE:
+			antState = STATE_HEXAGONAL_SHARPCLOCKWISE;
+			antButton.setString("Sharp Right Ant");
+			break;
+
+		case STATE_HEXAGONAL_SHARPCLOCKWISE:
+			antState = 0;
+			antButton.setString("No Ant");
+			break;
+
+		default:
+			antState = STATE_HEXAGONAL_SHARPCOUNTER;
+			antButton.setString("Sharp Left Ant");
+			break;
+		}
+
+		break;
+
+	case TRIANGULAR:
+		switch (antState)
+		{
+		case STATE_TRIANGULAR_CLOCKWISE:
+			antState = 0;
+			antButton.setString("No Ant");
+			break;
+
+		case STATE_TRIANGULAR_COUNTER:
+			antState = STATE_TRIANGULAR_CLOCKWISE;
+			antButton.setString("Clockwise Ant");
+			break;
+
+		default:
+			antState = STATE_TRIANGULAR_COUNTER;
+			antButton.setString("Counterclockwise Ant");
+			break;
+		}
+
+		break;
+
+	default:
+		break;
+	}
+}
+
+//cycles through facing types
+void advanceFacing(GRID gridType, int &facingState, TextBox &facingButton)
+{
+	switch (gridType)
+	{
+	case SQUARE:
+		switch (facingState)
+		{
+		case STATE_SQUARE_E:
+			facingState = STATE_SQUARE_S;
+			facingButton.setString("Facing South");
+			break;
+
+		case STATE_SQUARE_S:
+			facingState = STATE_SQUARE_W;
+			facingButton.setString("Facing West");
+			break;
+
+		case STATE_SQUARE_W:
+			facingState = STATE_SQUARE_N;
+			facingButton.setString("Facing North");
+			break;
+
+		default:
+			facingState = STATE_SQUARE_E;
+			facingButton.setString("Facing East");
+			break;
+		}
+
+		break;
+
+	case HEXAGONAL:
+		switch (facingState)
+		{
+		case STATE_HEXAGONAL_E:
+			facingState = STATE_HEXAGONAL_SE;
+			facingButton.setString("Facing Southeast");
+			break;
+
+		case STATE_HEXAGONAL_SE:
+			facingState = STATE_HEXAGONAL_SW;
+			facingButton.setString("Facing Southwest");
+			break;
+
+		case STATE_HEXAGONAL_SW:
+			facingState = STATE_HEXAGONAL_W;
+			facingButton.setString("Facing West");
+			break;
+
+		case STATE_HEXAGONAL_W:
+			facingState = STATE_HEXAGONAL_NW;
+			facingButton.setString("Facing Northwest");
+			break;
+
+		case STATE_HEXAGONAL_NW:
+			facingState = STATE_HEXAGONAL_NE;
+			facingButton.setString("Facing Northeast");
+			break;
+
+		default:
+			facingState = STATE_HEXAGONAL_E;
+			facingButton.setString("Facing East");
+			break;
+		}
+
+		break;
+
+	case TRIANGULAR:
+		switch (facingState)
+		{
+		case STATE_TRIANGULAR_NS:
+			facingState = STATE_TRIANGULAR_E;
+			facingButton.setString("Facing East");
+			break;
+
+		case STATE_TRIANGULAR_E:
+			facingState = STATE_TRIANGULAR_W;
+			facingButton.setString("Facing West");
+			break;
+
+		default:
+			facingState = STATE_TRIANGULAR_NS;
+			facingButton.setString("Facing Vertically");
+			break;
+		}
+
+		break;
+
+	default:
+		break;
+	}
+}
+
 //main function
 //sets program up and handles events and drawing
 int main()
@@ -271,6 +456,9 @@ int main()
 	int numStepsPerFrame = 1;
 	int numThreads = 4;
 	int pencilState = 1;
+	int cellState = 1;
+	int antState = 0;
+	int facingState = 0;
 
 	sf::Color colors[128];
 	bool shouldLoopHorizontally = true;
@@ -307,6 +495,10 @@ int main()
 	TextBox loopsVerticallyButton("Loops Vertically", &window, arialFont, sf::Color(63, 63, 63), sf::Color(255, 255, 255), sf::Color(255, 255, 255), sf::Color(0, 0, 0), true);
 	TextBox menuButton("Main Menu", &window, arialFont, sf::Color(63, 63, 63), sf::Color(255, 255, 255), sf::Color(255, 255, 255), sf::Color(0, 0, 0), true);
 
+	TextBox cellButton("Cell On", &window, arialFont, sf::Color(63, 63, 63), sf::Color(255, 255, 255), sf::Color(255, 255, 255), sf::Color(0, 0, 0), true);
+	TextBox antButton("No Ant", &window, arialFont, sf::Color(63, 63, 63), sf::Color(255, 255, 255), sf::Color(255, 255, 255), sf::Color(0, 0, 0), true);
+	TextBox facingButton("Facing East", &window, arialFont, sf::Color(63, 63, 63), sf::Color(255, 255, 255), sf::Color(255, 255, 255), sf::Color(0, 0, 0), true);
+
 	TextBox pencilButton("Draw", &window, arialFont, sf::Color(63, 63, 63), sf::Color(255, 255, 255), sf::Color(255, 255, 255), sf::Color(0, 0, 0), true);
 	TextBox neighborhoodButton("Vertex Neighbors", &window, arialFont, sf::Color(63, 63, 63), sf::Color(255, 255, 255), sf::Color(255, 255, 255), sf::Color(0, 0, 0), true);
 	TextBox rulesIfOffButton("Birth", &window, arialFont, sf::Color(0, 0, 0), sf::Color(0, 0, 0), sf::Color(255, 255, 255), sf::Color(0, 0, 0), true);
@@ -321,6 +513,7 @@ int main()
 	initializeMainMenuButtons(window, caButton, gridButton, widthButton, heightButton, widthText, heightText, doneButton);
 	initializeSideMenuButtons(window, threadButton, threadText, stepsPerFrameButton, stepsPerFrameText, pauseButton, stepButton, loopsHorizontallyButton, loopsVerticallyButton, menuButton);
 	initializeOtMenuButtons(window, pencilButton, neighborhoodButton, rulesIfOffButton, rulesIfOnButton, rulesIfOffButtons, rulesIfOnButtons);
+	initializeLaMenuButtons(window, cellButton, antButton, facingButton);
 
 	while (window.isOpen())
 	{
@@ -559,7 +752,14 @@ int main()
 				else if (menuButton.doesContainPoint(mousePosition))
 				{
 					isShowingMainMenu = true;
-					pencilState = 1;
+
+					cellState = 1;
+					antState = 0;
+					facingState = 0;
+
+					cellButton.setString("Cell On");
+					antButton.setString("No Ant");
+					facingButton.setString("Facing East");
 
 					delete automatonUpdater;
 					delete cellularAutomaton;
@@ -605,7 +805,19 @@ int main()
 					}
 					else
 					{
-
+						if (cellButton.doesContainPoint(mousePosition))
+						{
+							cellState = 1 - cellState;
+							cellButton.setString((cellState) ? ("Cell On") : ("Cell Off"));
+						}
+						else if (antButton.doesContainPoint(mousePosition))
+						{
+							advanceAnt(gridType, antState, antButton);
+						}
+						else if (facingButton.doesContainPoint(mousePosition))
+						{
+							advanceFacing(gridType, facingState, facingButton);
+						}
 					}
 				}
 			}
@@ -633,7 +845,7 @@ int main()
 
 				if (gridPosition.x > -1 && gridPosition.x < grid->WIDTH && gridPosition.y > -1 && gridPosition.y < grid->HEIGHT)
 				{
-					grid->setCellState(pencilState, gridPosition.x, gridPosition.y);
+					grid->setCellState((caType == OUTER_TOTALISTIC) ? (pencilState) : (cellState | antState | facingState), gridPosition.x, gridPosition.y);
 				}
 			}
 		}
@@ -681,7 +893,9 @@ int main()
 			}
 			else
 			{
-
+				cellButton.draw();
+				antButton.draw();
+				facingButton.draw();
 			}
 
 			menuButton.draw();
