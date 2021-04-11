@@ -12,6 +12,7 @@ public:
 	const int HEIGHT;	//height of grid in cells
 
 	Grid(sf::RenderWindow* window, int width, int height, sf::Color* colors);
+	~Grid();
 
 	void toggleGrid();
 

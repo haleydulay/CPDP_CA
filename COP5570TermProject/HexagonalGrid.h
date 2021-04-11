@@ -9,7 +9,6 @@ class HexagonalGrid : public Grid
 {
 public:
 	HexagonalGrid(sf::RenderWindow* window, int width, int height, sf::Color* colors);
-	~HexagonalGrid();
 
 	int getCellState(int x, int y);
 	void setCellState(int state, int x, int y);

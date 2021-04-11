@@ -8,7 +8,6 @@ class SquareGrid : public Grid
 {
 public:
 	SquareGrid(sf::RenderWindow* window, int width, int height, sf::Color* colors);
-	~SquareGrid();
 
 	int getCellState(int x, int y);
 	void setCellState(int state, int x, int y);

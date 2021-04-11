@@ -12,6 +12,10 @@ public:
 	int getWidth();
 	int getHeight();
 
+	void setIsMooreNeighborhood(bool is);
+	void setBirthRule(int index, int state);
+	void setSurvivalRule(int index, int state);
+
 	void toggleGrid();
 	void update(int minX, int minY, int maxX, int maxY);
 

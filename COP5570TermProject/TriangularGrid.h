@@ -10,7 +10,6 @@ class TriangularGrid : public Grid
 {
 public:
 	TriangularGrid(sf::RenderWindow* window, int width, int height, sf::Color* colors);
-	~TriangularGrid();
 
 	int getCellState(int x, int y);
 	void setCellState(int state, int x, int y);

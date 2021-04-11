@@ -61,20 +61,6 @@ HexagonalGrid::HexagonalGrid(sf::RenderWindow* window, int width, int height, sf
 	}
 }
 
-//hexagonal grid destructor
-//deletes grid and image
-HexagonalGrid::~HexagonalGrid()
-{
-	for (int x = 0; x < WIDTH; ++x)
-	{
-		delete[] gridA[x];
-		delete[] gridB[x];
-	}
-
-	delete[] gridA;
-	delete[] gridB;
-}
-
 //returns grid[x][y]
 int HexagonalGrid::getCellState(int x, int y)
 {

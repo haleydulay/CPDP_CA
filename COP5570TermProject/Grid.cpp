@@ -7,6 +7,20 @@ Grid::Grid(sf::RenderWindow* window, int width, int height, sf::Color* colors) :
 	shouldReadGridA = true;
 }
 
+//grid destructor
+//deletes grid
+Grid::~Grid()
+{
+	for (int x = 0; x < WIDTH; ++x)
+	{
+		delete[] gridA[x];
+		delete[] gridB[x];
+	}
+
+	delete[] gridA;
+	delete[] gridB;
+}
+
 //toggles shouldReadGridA
 //should be called between time steps
 void Grid::toggleGrid()

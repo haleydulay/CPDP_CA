@@ -25,6 +25,21 @@ int OuterTotalisticCA::getHeight()
 	return GRID->HEIGHT;
 }
 
+void OuterTotalisticCA::setIsMooreNeighborhood(bool is)
+{
+	isMooreNeighborhood = is;
+}
+
+void OuterTotalisticCA::setBirthRule(int index, int state)
+{
+	rulesIfOff[index] = state;
+}
+
+void OuterTotalisticCA::setSurvivalRule(int index, int state)
+{
+	rulesIfOn[index] = state;
+}
+
 //toggles grid
 void OuterTotalisticCA::toggleGrid()
 {

@@ -31,20 +31,6 @@ SquareGrid::SquareGrid(sf::RenderWindow* window, int width, int height, sf::Colo
 	}
 }
 
-//square grid destructor
-//deletes grid
-SquareGrid::~SquareGrid()
-{
-	for (int x = 0; x < WIDTH; ++x)
-	{
-		delete[] gridA[x];
-		delete[] gridB[x];
-	}
-
-	delete[] gridA;
-	delete[] gridB;
-}
-
 //returns grid[x][y]
 int SquareGrid::getCellState(int x, int y)
 {

@@ -62,6 +62,32 @@ void initializeSideMenuButtons(sf::RenderWindow &window, TextBox &threadButton, 
 	menuButton.setPosition(window.getSize().x * 0.75f, window.getSize().y * 0.875f);
 }
 
+//initializes outer-totalistic buttons
+void initializeOtMenuButtons(sf::RenderWindow &window, TextBox &pencilButton, TextBox &neighborhoodButton, TextBox &rulesIfOffButton, TextBox &rulesIfOnButton, std::vector<TextBox>& rulesIfOffButtons, std::vector<TextBox>& rulesIfOnButtons)
+{
+	pencilButton.setSize(window.getSize().x * 0.125f, window.getSize().y * 0.125f, 20);
+	neighborhoodButton.setSize(window.getSize().x * 0.125f, window.getSize().y * 0.125f, 20);
+	rulesIfOffButton.setSize(window.getSize().x * 0.046875f, window.getSize().y * 0.125f, 20);
+	rulesIfOnButton.setSize(window.getSize().x * 0.046875f, window.getSize().y * 0.125f, 20);
+
+	for (int b = 0; b < 13; ++b)
+	{
+		rulesIfOffButtons[b].setSize(window.getSize().x * 0.015625f, window.getSize().y * 0.125f, 20);
+		rulesIfOnButtons[b].setSize(window.getSize().x * 0.015625f, window.getSize().y * 0.125f, 20);
+	}
+
+	pencilButton.setPosition(window.getSize().x * 0.75f, window.getSize().y * 0.5f);
+	neighborhoodButton.setPosition(window.getSize().x * 0.875f, window.getSize().y * 0.5f);
+	rulesIfOffButton.setPosition(window.getSize().x * 0.75f, window.getSize().y * 0.625f);
+	rulesIfOnButton.setPosition(window.getSize().x * 0.75f, window.getSize().y * 0.75f);
+
+	for (int b = 0; b < 13; ++b)
+	{
+		rulesIfOffButtons[b].setPosition(window.getSize().x * (51 + b) * 0.015625f, window.getSize().y * 0.625f);
+		rulesIfOnButtons[b].setPosition(window.getSize().x * (51 + b) * 0.015625f, window.getSize().y * 0.75f);
+	}
+}
+
 //uses main menu data to initialize next screen
 //outer-totalistic version
 void initializeOuterTotalisticCa(sf::RenderWindow &window, int numThreads, bool isMooreNeighborhood, bool shouldLoopHorizontally, bool shouldLoopVertically, GRID gridType, int width, int height, Grid* &grid, CellularAutomaton* &cellularAutomaton, ThreadController* &automatonUpdater, sf::Color colors[128], int rulesIfOff[13], int rulesIfOn[13])
@@ -246,9 +272,22 @@ int main()
 	int numThreads = 4;
 	int pencilState = 1;
 
+	sf::Color colors[128];
+	bool shouldLoopHorizontally = true;
+	bool shouldLoopVertically = true;
+	Grid* grid = nullptr;
+	CellularAutomaton* cellularAutomaton = nullptr;
+	ThreadController* automatonUpdater = nullptr;
+
+	bool isMooreNeighborhood = true;
+	int rulesIfOff[13] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+	int rulesIfOn[13] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
 	arialFont.loadFromFile("arial.ttf");
 
 	TextBox* selectedTextBox = nullptr;
+	std::vector<TextBox> rulesIfOffButtons;
+	std::vector<TextBox> rulesIfOnButtons;
 
 	TextBox caButton("Outer Totalistic", &window, arialFont, sf::Color(63, 63, 63), sf::Color(255, 255, 255), sf::Color(255, 255, 255), sf::Color(0, 0, 0), true);
 	TextBox gridButton("Square", &window, arialFont, sf::Color(63, 63, 63), sf::Color(255, 255, 255), sf::Color(255, 255, 255), sf::Color(0, 0, 0), true);
@@ -268,24 +307,26 @@ int main()
 	TextBox loopsVerticallyButton("Loops Vertically", &window, arialFont, sf::Color(63, 63, 63), sf::Color(255, 255, 255), sf::Color(255, 255, 255), sf::Color(0, 0, 0), true);
 	TextBox menuButton("Main Menu", &window, arialFont, sf::Color(63, 63, 63), sf::Color(255, 255, 255), sf::Color(255, 255, 255), sf::Color(0, 0, 0), true);
 
+	TextBox pencilButton("Draw", &window, arialFont, sf::Color(63, 63, 63), sf::Color(255, 255, 255), sf::Color(255, 255, 255), sf::Color(0, 0, 0), true);
+	TextBox neighborhoodButton("Vertex Neighbors", &window, arialFont, sf::Color(63, 63, 63), sf::Color(255, 255, 255), sf::Color(255, 255, 255), sf::Color(0, 0, 0), true);
+	TextBox rulesIfOffButton("Birth", &window, arialFont, sf::Color(0, 0, 0), sf::Color(0, 0, 0), sf::Color(255, 255, 255), sf::Color(0, 0, 0), true);
+	TextBox rulesIfOnButton("Survival", &window, arialFont, sf::Color(0, 0, 0), sf::Color(0, 0, 0), sf::Color(255, 255, 255), sf::Color(0, 0, 0), true);
+
+	for (int r = 0; r < 13; ++r)
+	{
+		rulesIfOffButtons.push_back(TextBox("", &window, arialFont, sf::Color(63, 63, 63), sf::Color(255, 255, 255), sf::Color(255, 255, 255), sf::Color(0, 0, 0), true));
+		rulesIfOnButtons.push_back(TextBox("", &window, arialFont, sf::Color(63, 63, 63), sf::Color(255, 255, 255), sf::Color(255, 255, 255), sf::Color(0, 0, 0), true));
+	}
+
 	initializeMainMenuButtons(window, caButton, gridButton, widthButton, heightButton, widthText, heightText, doneButton);
 	initializeSideMenuButtons(window, threadButton, threadText, stepsPerFrameButton, stepsPerFrameText, pauseButton, stepButton, loopsHorizontallyButton, loopsVerticallyButton, menuButton);
-
-	sf::Color colors[128];
-	bool shouldLoopHorizontally = true;
-	bool shouldLoopVertically = true;
-	Grid* grid = nullptr;
-	CellularAutomaton* cellularAutomaton = nullptr;
-	ThreadController* automatonUpdater = nullptr;
-
-	bool isMooreNeighborhood = true;
-	int rulesIfOff[13] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-	int rulesIfOn[13] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+	initializeOtMenuButtons(window, pencilButton, neighborhoodButton, rulesIfOffButton, rulesIfOnButton, rulesIfOffButtons, rulesIfOnButtons);
 
 	while (window.isOpen())
 	{
 		sf::Event event;
 
+		//process key presses and window closing
 		while (window.pollEvent(event))
 		{
 			switch (event.type)
@@ -302,6 +343,13 @@ int main()
 					case sf::Keyboard::Return:
 						isShowingMainMenu = false;
 						initializeCellularAutomaton(window, numThreads, isMooreNeighborhood, shouldLoopHorizontally, shouldLoopVertically, caType, gridType, widthText.getValue(3), heightText.getValue(3), grid, cellularAutomaton, automatonUpdater, colors, rulesIfOff, rulesIfOn);
+
+						for (int b = 0; b < 13; ++b)
+						{
+							rulesIfOffButtons[b].setString((rulesIfOff[b]) ? (std::to_string(b)) : (""));
+							rulesIfOnButtons[b].setString((rulesIfOn[b]) ? (std::to_string(b)) : (""));
+						}
+
 						break;
 
 					default:
@@ -376,6 +424,7 @@ int main()
 			}
 		}
 
+		//handle button clicking
 		if (!sf::Mouse::isButtonPressed(sf::Mouse::Left))
 		{
 			isClicking = false;
@@ -448,6 +497,12 @@ int main()
 				{
 					isShowingMainMenu = false;
 					initializeCellularAutomaton(window, numThreads, isMooreNeighborhood, shouldLoopHorizontally, shouldLoopVertically, caType, gridType, widthText.getValue(3), heightText.getValue(3), grid, cellularAutomaton, automatonUpdater, colors, rulesIfOff, rulesIfOn);
+
+					for (int b = 0; b < 13; ++b)
+					{
+						rulesIfOffButtons[b].setString((rulesIfOff[b]) ? (std::to_string(b)) : (""));
+						rulesIfOnButtons[b].setString((rulesIfOn[b]) ? (std::to_string(b)) : (""));
+					}
 				}
 			}
 			else
@@ -509,10 +564,54 @@ int main()
 					delete automatonUpdater;
 					delete cellularAutomaton;
 					delete grid;
+
+					automatonUpdater = nullptr;
+				}
+				else
+				{
+					if (caType == OUTER_TOTALISTIC)
+					{
+						if (pencilButton.doesContainPoint(mousePosition))
+						{
+							pencilState = 1 - pencilState;
+							pencilButton.setString((pencilState) ? ("Draw") : ("Erase"));
+						}
+						else if (neighborhoodButton.doesContainPoint(mousePosition))
+						{
+							isMooreNeighborhood = !isMooreNeighborhood;
+							neighborhoodButton.setString((isMooreNeighborhood) ? ("Vertex Neighbors") : ("Edge Neighbors"));
+							((OuterTotalisticCA*)cellularAutomaton)->setIsMooreNeighborhood(isMooreNeighborhood);
+						}
+						else
+						{
+							for (int b = 0; b < 13; ++b)
+							{
+								if (rulesIfOffButtons[b].doesContainPoint(mousePosition))
+								{
+									rulesIfOff[b] = 1 - rulesIfOff[b];
+									rulesIfOffButtons[b].setString((rulesIfOff[b]) ? (std::to_string(b)) : (""));
+									((OuterTotalisticCA*)cellularAutomaton)->setBirthRule(b, rulesIfOff[b]);
+									break;
+								}
+								else if (rulesIfOnButtons[b].doesContainPoint(mousePosition))
+								{
+									rulesIfOn[b] = 1 - rulesIfOn[b];
+									rulesIfOnButtons[b].setString((rulesIfOn[b]) ? (std::to_string(b)) : (""));
+									((OuterTotalisticCA*)cellularAutomaton)->setSurvivalRule(b, rulesIfOn[b]);
+									break;
+								}
+							}
+						}
+					}
+					else
+					{
+
+					}
 				}
 			}
 		}
 
+		//update grid
 		if (!isShowingMainMenu)
 		{
 			if (isUnpaused)
@@ -541,6 +640,7 @@ int main()
 
 		window.clear();
 		
+		//draw everything
 		if (isShowingMainMenu)
 		{
 			caButton.draw();
@@ -564,7 +664,20 @@ int main()
 
 			if (caType == OUTER_TOTALISTIC)
 			{
+				pencilButton.draw();
+				neighborhoodButton.draw();
+				rulesIfOffButton.draw();
+				rulesIfOnButton.draw();
 
+				for (TextBox button : rulesIfOffButtons)
+				{
+					button.draw();
+				}
+
+				for (TextBox button : rulesIfOnButtons)
+				{
+					button.draw();
+				}
 			}
 			else
 			{
@@ -579,9 +692,12 @@ int main()
 		window.display();
 	}
 
-	delete automatonUpdater;
-	delete cellularAutomaton;
-	delete grid;
+	if (automatonUpdater)
+	{
+		delete automatonUpdater;
+		delete cellularAutomaton;
+		delete grid;
+	}
 
 	return 0;
 }

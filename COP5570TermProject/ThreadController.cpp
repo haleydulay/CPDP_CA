@@ -71,7 +71,10 @@ void ThreadController::setNumThreads(int numThreads)
 //waits for threads to finish
 void ThreadController::activate(bool isKill)
 {
-	CELLULAR_AUTOMATON->toggleGrid();
+	if (!isKill)
+	{
+		CELLULAR_AUTOMATON->toggleGrid();
+	}
 
 	numStartedMutex.lock();
 	startMutex.lock();
