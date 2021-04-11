@@ -19,21 +19,47 @@ enum CELLULAR_AUTOMATON
 };
 
 //initializes main menu buttons
-void initializeMainMenuButtons(sf::RenderWindow &window, TextBox &caButton, TextBox &gridButton, TextBox &widthButton, TextBox &heightButton, TextBox &widthText, TextBox &heightText)
+void initializeMainMenuButtons(sf::RenderWindow &window, TextBox &caButton, TextBox &gridButton, TextBox &widthButton, TextBox &heightButton, TextBox &widthText, TextBox &heightText, TextBox &doneButton)
 {
-	caButton.setSize(window.getSize().x * 0.5f, window.getSize().y * 0.125f, 30);
-	gridButton.setSize(window.getSize().x * 0.5f, window.getSize().y * 0.125f, 30);
-	widthButton.setSize(window.getSize().x * 0.25f, window.getSize().y * 0.125f, 30);
-	heightButton.setSize(window.getSize().x * 0.25f, window.getSize().y * 0.125f, 30);
-	widthText.setSize(window.getSize().x * 0.25f, window.getSize().y * 0.125f, 30);
-	heightText.setSize(window.getSize().x * 0.25f, window.getSize().y * 0.125f, 30);
+	caButton.setSize(window.getSize().x * 0.5f, window.getSize().y * 0.1f, 30);
+	gridButton.setSize(window.getSize().x * 0.5f, window.getSize().y * 0.1f, 30);
+	widthButton.setSize(window.getSize().x * 0.25f, window.getSize().y * 0.1f, 30);
+	heightButton.setSize(window.getSize().x * 0.25f, window.getSize().y * 0.1f, 30);
+	widthText.setSize(window.getSize().x * 0.25f, window.getSize().y * 0.1f, 30);
+	heightText.setSize(window.getSize().x * 0.25f, window.getSize().y * 0.1f, 30);
+	doneButton.setSize(window.getSize().x * 0.5f, window.getSize().y * 0.1f, 30);
 
 	caButton.setPosition(window.getSize().x * 0.25f, window.getSize().y * 0.25f);
-	gridButton.setPosition(window.getSize().x * 0.25f, window.getSize().y * 0.375f);
-	widthButton.setPosition(window.getSize().x * 0.25f, window.getSize().y * 0.5f);
-	heightButton.setPosition(window.getSize().x * 0.25f, window.getSize().y * 0.625f);
-	widthText.setPosition(window.getSize().x * 0.5f, window.getSize().y * 0.5f);
-	heightText.setPosition(window.getSize().x * 0.5f, window.getSize().y * 0.625f);
+	gridButton.setPosition(window.getSize().x * 0.25f, window.getSize().y * 0.35f);
+	widthButton.setPosition(window.getSize().x * 0.25f, window.getSize().y * 0.45f);
+	heightButton.setPosition(window.getSize().x * 0.25f, window.getSize().y * 0.55f);
+	widthText.setPosition(window.getSize().x * 0.5f, window.getSize().y * 0.45f);
+	heightText.setPosition(window.getSize().x * 0.5f, window.getSize().y * 0.55f);
+	doneButton.setPosition(window.getSize().x * 0.25f, window.getSize().y * 0.65f);
+}
+
+//initializes side menu buttons
+void initializeSideMenuButtons(sf::RenderWindow &window, TextBox &threadButton, TextBox &threadText, TextBox &stepsPerFrameButton, TextBox &stepsPerFrameText, TextBox &pauseButton, TextBox &stepButton, TextBox &loopsHorizontallyButton, TextBox &loopsVerticallyButton, TextBox &menuButton)
+{
+	threadButton.setSize(window.getSize().x * 0.125f, window.getSize().y * 0.125f, 20);
+	threadText.setSize(window.getSize().x * 0.125f, window.getSize().y * 0.125f, 20);
+	stepsPerFrameButton.setSize(window.getSize().x * 0.125f, window.getSize().y * 0.125f, 20);
+	stepsPerFrameText.setSize(window.getSize().x * 0.125f, window.getSize().y * 0.125f, 20);
+	pauseButton.setSize(window.getSize().x * 0.125f, window.getSize().y * 0.125f, 20);
+	stepButton.setSize(window.getSize().x * 0.125f, window.getSize().y * 0.125f, 20);
+	loopsHorizontallyButton.setSize(window.getSize().x * 0.125f, window.getSize().y * 0.125f, 20);
+	loopsVerticallyButton.setSize(window.getSize().x * 0.125f, window.getSize().y * 0.125f, 20);
+	menuButton.setSize(window.getSize().x * 0.25f, window.getSize().y * 0.125f, 20);
+
+	threadButton.setPosition(window.getSize().x * 0.75f, 0.0f);
+	threadText.setPosition(window.getSize().x * 0.875f, 0.0f);
+	stepsPerFrameButton.setPosition(window.getSize().x * 0.75f, window.getSize().y * 0.125f);
+	stepsPerFrameText.setPosition(window.getSize().x * 0.875f, window.getSize().y * 0.125f);
+	pauseButton.setPosition(window.getSize().x * 0.75f, window.getSize().y * 0.25f);
+	stepButton.setPosition(window.getSize().x * 0.875f, window.getSize().y * 0.25f);
+	loopsHorizontallyButton.setPosition(window.getSize().x * 0.75f, window.getSize().y * 0.375f);
+	loopsVerticallyButton.setPosition(window.getSize().x * 0.875f, window.getSize().y * 0.375f);
+	menuButton.setPosition(window.getSize().x * 0.75f, window.getSize().y * 0.875f);
 }
 
 //uses main menu data to initialize next screen
@@ -214,6 +240,12 @@ int main()
 	GRID gridType = SQUARE;
 	CELLULAR_AUTOMATON caType = OUTER_TOTALISTIC;
 
+	bool isUnpaused = false;
+	bool shouldStep = false;
+	int numStepsPerFrame = 1;
+	int numThreads = 4;
+	int pencilState = 1;
+
 	arialFont.loadFromFile("arial.ttf");
 
 	TextBox* selectedTextBox = nullptr;
@@ -224,13 +256,20 @@ int main()
 	TextBox heightButton("Height", &window, arialFont, sf::Color(0, 0, 0), sf::Color(0, 0, 0), sf::Color(255, 255, 255), sf::Color(0, 0, 0), true);
 	TextBox widthText("64", &window, arialFont, sf::Color(63, 63, 63), sf::Color(255, 255, 255), sf::Color(255, 255, 255), sf::Color(0, 0, 0), false);
 	TextBox heightText("64", &window, arialFont, sf::Color(63, 63, 63), sf::Color(255, 255, 255), sf::Color(255, 255, 255), sf::Color(0, 0, 0), false);
+	TextBox doneButton("Done", &window, arialFont, sf::Color(63, 63, 63), sf::Color(255, 255, 255), sf::Color(255, 255, 255), sf::Color(0, 0, 0), true);
 
-	initializeMainMenuButtons(window, caButton, gridButton, widthButton, heightButton, widthText, heightText);
+	TextBox threadButton("Threads", &window, arialFont, sf::Color(0, 0, 0), sf::Color(0, 0, 0), sf::Color(255, 255, 255), sf::Color(0, 0, 0), true);
+	TextBox threadText("4", &window, arialFont, sf::Color(63, 63, 63), sf::Color(255, 255, 255), sf::Color(255, 255, 255), sf::Color(0, 0, 0), false);
+	TextBox stepsPerFrameButton("Steps per Frame", &window, arialFont, sf::Color(0, 0, 0), sf::Color(0, 0, 0), sf::Color(255, 255, 255), sf::Color(0, 0, 0), true);
+	TextBox stepsPerFrameText("1", &window, arialFont, sf::Color(63, 63, 63), sf::Color(255, 255, 255), sf::Color(255, 255, 255), sf::Color(0, 0, 0), false);
+	TextBox pauseButton("Paused", &window, arialFont, sf::Color(63, 63, 63), sf::Color(255, 255, 255), sf::Color(255, 255, 255), sf::Color(0, 0, 0), true);
+	TextBox stepButton("Step", &window, arialFont, sf::Color(63, 63, 63), sf::Color(255, 255, 255), sf::Color(255, 255, 255), sf::Color(0, 0, 0), true);
+	TextBox loopsHorizontallyButton("Loops Horizontally", &window, arialFont, sf::Color(63, 63, 63), sf::Color(255, 255, 255), sf::Color(255, 255, 255), sf::Color(0, 0, 0), true);
+	TextBox loopsVerticallyButton("Loops Vertically", &window, arialFont, sf::Color(63, 63, 63), sf::Color(255, 255, 255), sf::Color(255, 255, 255), sf::Color(0, 0, 0), true);
+	TextBox menuButton("Main Menu", &window, arialFont, sf::Color(63, 63, 63), sf::Color(255, 255, 255), sf::Color(255, 255, 255), sf::Color(0, 0, 0), true);
 
-	bool isUnpaused = false;
-	bool shouldStep = false;
-	int numStepsPerFrame = 1;
-	int numThreads = 4;
+	initializeMainMenuButtons(window, caButton, gridButton, widthButton, heightButton, widthText, heightText, doneButton);
+	initializeSideMenuButtons(window, threadButton, threadText, stepsPerFrameButton, stepsPerFrameText, pauseButton, stepButton, loopsHorizontallyButton, loopsVerticallyButton, menuButton);
 
 	sf::Color colors[128];
 	bool shouldLoopHorizontally = true;
@@ -262,14 +301,6 @@ int main()
 					{
 					case sf::Keyboard::Return:
 						isShowingMainMenu = false;
-						
-						if (cellularAutomaton)
-						{
-							delete grid;
-							delete cellularAutomaton;
-							delete automatonUpdater;
-						}
-
 						initializeCellularAutomaton(window, numThreads, isMooreNeighborhood, shouldLoopHorizontally, shouldLoopVertically, caType, gridType, widthText.getValue(3), heightText.getValue(3), grid, cellularAutomaton, automatonUpdater, colors, rulesIfOff, rulesIfOn);
 						break;
 
@@ -283,6 +314,24 @@ int main()
 					{
 					case sf::Keyboard::Space:
 						isUnpaused = !isUnpaused;
+						pauseButton.setString((isUnpaused) ? ("Running") : ("Paused"));
+
+						if (selectedTextBox)
+						{
+							selectedTextBox->setString(std::to_string(selectedTextBox->getValue(1)));
+
+							if (selectedTextBox == &threadText)
+							{
+								numThreads = threadText.getValue(1);
+								automatonUpdater->setNumThreads(numThreads);
+							}
+							else if (selectedTextBox == &stepsPerFrameText)
+							{
+								numStepsPerFrame = stepsPerFrameText.getValue(1);
+							}
+						}
+
+						selectedTextBox = nullptr;
 						break;
 
 					case sf::Keyboard::Return:
@@ -291,6 +340,22 @@ int main()
 							shouldStep = true;
 						}
 
+						if (selectedTextBox)
+						{
+							selectedTextBox->setString(std::to_string(selectedTextBox->getValue(1)));
+
+							if (selectedTextBox == &threadText)
+							{
+								numThreads = threadText.getValue(1);
+								automatonUpdater->setNumThreads(numThreads);
+							}
+							else if (selectedTextBox == &stepsPerFrameText)
+							{
+								numStepsPerFrame = stepsPerFrameText.getValue(1);
+							}
+						}
+
+						selectedTextBox = nullptr;
 						break;
 
 					default:
@@ -311,32 +376,6 @@ int main()
 			}
 		}
 
-		if (!isShowingMainMenu)
-		{
-			if (isUnpaused)
-			{
-				for (int step = 0; step < numStepsPerFrame; ++step)
-				{
-					automatonUpdater->activate();
-				}
-			}
-			else if (shouldStep)
-			{
-				automatonUpdater->activate();
-				shouldStep = false;
-			}
-
-			if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
-			{
-				sf::Vector2i gridPosition = grid->getGridPositionAtMouse();
-
-				if (gridPosition.x > -1 && gridPosition.x < grid->WIDTH && gridPosition.y > -1 && gridPosition.y < grid->HEIGHT)
-				{
-					grid->setCellState(1, gridPosition.x, gridPosition.y);
-				}
-			}
-		}
-
 		if (!sf::Mouse::isButtonPressed(sf::Mouse::Left))
 		{
 			isClicking = false;
@@ -345,16 +384,17 @@ int main()
 		{
 			sf::Vector2i mousePosition = sf::Mouse::getPosition(window);
 
-			if (selectedTextBox)
-			{
-				selectedTextBox->setString(std::to_string(selectedTextBox->getValue(3)));
-			}
-
 			isClicking = true;
-			selectedTextBox = nullptr;
 
 			if (isShowingMainMenu)
 			{
+				if (selectedTextBox)
+				{
+					selectedTextBox->setString(std::to_string(selectedTextBox->getValue(3)));
+				}
+
+				selectedTextBox = nullptr;
+
 				if (caButton.doesContainPoint(mousePosition))
 				{
 					switch (caType)
@@ -404,10 +444,98 @@ int main()
 				{
 					selectedTextBox = &heightText;
 				}
+				else if (doneButton.doesContainPoint(mousePosition))
+				{
+					isShowingMainMenu = false;
+					initializeCellularAutomaton(window, numThreads, isMooreNeighborhood, shouldLoopHorizontally, shouldLoopVertically, caType, gridType, widthText.getValue(3), heightText.getValue(3), grid, cellularAutomaton, automatonUpdater, colors, rulesIfOff, rulesIfOn);
+				}
 			}
 			else
 			{
+				if (selectedTextBox)
+				{
+					selectedTextBox->setString(std::to_string(selectedTextBox->getValue(1)));
 
+					if (selectedTextBox == &threadText)
+					{
+						numThreads = threadText.getValue(1);
+						automatonUpdater->setNumThreads(numThreads);
+					}
+					else if (selectedTextBox == &stepsPerFrameText)
+					{
+						numStepsPerFrame = stepsPerFrameText.getValue(1);
+					}
+				}
+
+				selectedTextBox = nullptr;
+
+				if (threadText.doesContainPoint(mousePosition))
+				{
+					selectedTextBox = &threadText;
+				}
+				else if (stepsPerFrameText.doesContainPoint(mousePosition))
+				{
+					selectedTextBox = &stepsPerFrameText;
+				}
+				else if (pauseButton.doesContainPoint(mousePosition))
+				{
+					isUnpaused = !isUnpaused;
+					pauseButton.setString((isUnpaused) ? ("Running") : ("Paused"));
+				}
+				else if (stepButton.doesContainPoint(mousePosition))
+				{
+					if (!isUnpaused)
+					{
+						shouldStep = true;
+					}
+				}
+				else if (loopsHorizontallyButton.doesContainPoint(mousePosition))
+				{
+					shouldLoopHorizontally = !shouldLoopHorizontally;
+					loopsHorizontallyButton.setString((shouldLoopHorizontally) ? ("Loops Horizontally") : ("Clips Horizontally"));
+					cellularAutomaton->setShouldLoopHorizontally(shouldLoopHorizontally);
+				}
+				else if (loopsVerticallyButton.doesContainPoint(mousePosition))
+				{
+					shouldLoopVertically = !shouldLoopVertically;
+					loopsVerticallyButton.setString((shouldLoopVertically) ? ("Loops Vertically") : ("Clips Vertically"));
+					cellularAutomaton->setShouldLoopVertically(shouldLoopVertically);
+				}
+				else if (menuButton.doesContainPoint(mousePosition))
+				{
+					isShowingMainMenu = true;
+					pencilState = 1;
+
+					delete automatonUpdater;
+					delete cellularAutomaton;
+					delete grid;
+				}
+			}
+		}
+
+		if (!isShowingMainMenu)
+		{
+			if (isUnpaused)
+			{
+				for (int step = 0; step < numStepsPerFrame; ++step)
+				{
+					automatonUpdater->activate();
+				}
+			}
+			else if (shouldStep)
+			{
+				automatonUpdater->activate();
+				shouldStep = false;
+			}
+
+			if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
+			{
+				sf::Vector2i gridPosition = grid->getGridPositionAtMouse();
+
+				if (gridPosition.x > -1 && gridPosition.x < grid->WIDTH && gridPosition.y > -1 && gridPosition.y < grid->HEIGHT)
+				{
+					grid->setCellState(pencilState, gridPosition.x, gridPosition.y);
+				}
 			}
 		}
 
@@ -421,14 +549,39 @@ int main()
 			heightButton.draw();
 			widthText.draw();
 			heightText.draw();
+			doneButton.draw();
 		}
 		else
 		{
+			threadButton.draw();
+			threadText.draw();
+			stepsPerFrameButton.draw();
+			stepsPerFrameText.draw();
+			pauseButton.draw();
+			stepButton.draw();
+			loopsHorizontallyButton.draw();
+			loopsVerticallyButton.draw();
+
+			if (caType == OUTER_TOTALISTIC)
+			{
+
+			}
+			else
+			{
+
+			}
+
+			menuButton.draw();
+
 			grid->draw();
 		}
 
 		window.display();
 	}
+
+	delete automatonUpdater;
+	delete cellularAutomaton;
+	delete grid;
 
 	return 0;
 }

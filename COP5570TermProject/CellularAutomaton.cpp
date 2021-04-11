@@ -5,3 +5,13 @@ CellularAutomaton::CellularAutomaton(bool shouldLoopHorizontally, bool shouldLoo
 	this->shouldLoopHorizontally = shouldLoopHorizontally;
 	this->shouldLoopVertically = shouldLoopVertically;
 }
+
+void CellularAutomaton::setShouldLoopHorizontally(bool should)
+{
+	shouldLoopHorizontally = should;
+}
+
+void CellularAutomaton::setShouldLoopVertically(bool should)
+{
+	shouldLoopVertically = should;
+}
