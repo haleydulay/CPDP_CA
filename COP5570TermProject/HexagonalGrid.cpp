@@ -8,8 +8,8 @@ const float SQRT_3 = 1.732050807568877293527446341505872366942805253810380628055
 HexagonalGrid::HexagonalGrid(sf::RenderWindow* window, int width, int height, sf::Color* colors) : Grid(window, width, height, colors)
 {
 	float circleRadius;
-	pixelsPerInradius = (height > 1) ? (window->getSize().x / (2.0f * width + 1.0f)) : (window->getSize().x / (2.0f * width));
-	pixelsPerCircumradius = window->getSize().y * 2.0f / (3.0f * height + 1.0f);
+	pixelsPerInradius = (height > 1) ? (getCanvasWidth() / (2.0f * width + 1.0f)) : (getCanvasWidth() / (2.0f * width));
+	pixelsPerCircumradius = getCanvasHeight() * 2.0f / (3.0f * height + 1.0f);
 
 	if (pixelsPerInradius * INRADII_PER_CIRCUMRADIUS < pixelsPerCircumradius)
 	{

@@ -4,8 +4,8 @@
 //initializes member variables
 SquareGrid::SquareGrid(sf::RenderWindow* window, int width, int height, sf::Color* colors) : Grid(window, width, height, colors)
 {
-	float rectangleWidth = window->getSize().x / (float)width;
-	float rectangleHeight = window->getSize().y / (float)height;
+	float rectangleWidth = getCanvasWidth() / (float)width;
+	float rectangleHeight = getCanvasHeight() / (float)height;
 
 	squareLength = (rectangleWidth < rectangleHeight) ? (rectangleWidth) : (rectangleHeight);
 

@@ -9,8 +9,8 @@ TriangularGrid::TriangularGrid(sf::RenderWindow* window, int width, int height, 
 {
 	float circleRadius;
 	
-	pixelsPerBase = window->getSize().x * 2.0f / (width + 1.0f);
-	pixelsPerHeight = window->getSize().y / (float)height;
+	pixelsPerBase = getCanvasWidth() * 2.0f / (width + 1.0f);
+	pixelsPerHeight = getCanvasHeight() / (float)height;
 
 	if (pixelsPerBase / CIRCUMRADII_PER_BASE < pixelsPerHeight / CIRCUMRADII_PER_HEIGHT)
 	{
@@ -208,7 +208,7 @@ void TriangularGrid::getMooreNeighborhoodForUpTriangle(int neighborhood[13], int
 			//torus
 			for (int dy = -1; dy < 2; ++dy)
 			{
-				for (int dx = ((dy < 0) ? (-1) : (-2)); dx < ((dy < 0) ? (1) : (2)); ++dx)
+				for (int dx = ((dy < 0) ? (-1) : (-2)); dx < ((dy < 0) ? (2) : (3)); ++dx)
 				{
 					neighborhood[++n] = grid[(x + dx + WIDTH) % WIDTH][(y + dy + HEIGHT) % HEIGHT];
 				}
@@ -219,7 +219,7 @@ void TriangularGrid::getMooreNeighborhoodForUpTriangle(int neighborhood[13], int
 			//vertical cylinder
 			for (int dy = -1; dy < 2; ++dy)
 			{
-				for (int dx = ((dy < 0) ? (-1) : (-2)); dx < ((dy < 0) ? (1) : (2)); ++dx)
+				for (int dx = ((dy < 0) ? (-1) : (-2)); dx < ((dy < 0) ? (2) : (3)); ++dx)
 				{
 					neighborhood[++n] = (x + dx > -1 && x + dx < WIDTH) ? (grid[x + dx][(y + dy + HEIGHT) % HEIGHT]) : (0);
 				}
@@ -233,7 +233,7 @@ void TriangularGrid::getMooreNeighborhoodForUpTriangle(int neighborhood[13], int
 			//horizontal cylinder
 			for (int dy = -1; dy < 2; ++dy)
 			{
-				for (int dx = ((dy < 0) ? (-1) : (-2)); dx < ((dy < 0) ? (1) : (2)); ++dx)
+				for (int dx = ((dy < 0) ? (-1) : (-2)); dx < ((dy < 0) ? (2) : (3)); ++dx)
 				{
 					neighborhood[++n] = (y + dy > -1 && y + dy < HEIGHT) ? (grid[(x + dx + WIDTH) % WIDTH][y + dy]) : (0);
 				}
@@ -244,7 +244,7 @@ void TriangularGrid::getMooreNeighborhoodForUpTriangle(int neighborhood[13], int
 			//flat surface
 			for (int dy = -1; dy < 2; ++dy)
 			{
-				for (int dx = ((dy < 0) ? (-1) : (-2)); dx < ((dy < 0) ? (1) : (2)); ++dx)
+				for (int dx = ((dy < 0) ? (-1) : (-2)); dx < ((dy < 0) ? (2) : (3)); ++dx)
 				{
 					neighborhood[++n] = (x + dx > -1 && x + dx < WIDTH && y + dy > -1 && y + dy < HEIGHT) ? (grid[x + dx][y + dy]) : (0);
 				}
@@ -272,7 +272,7 @@ void TriangularGrid::getMooreNeighborhoodForDownTriangle(int neighborhood[13], i
 			//torus
 			for (int dy = -1; dy < 2; ++dy)
 			{
-				for (int dx = ((dy > 0) ? (-1) : (-2)); dx < ((dy > 0) ? (1) : (2)); ++dx)
+				for (int dx = ((dy > 0) ? (-1) : (-2)); dx < ((dy > 0) ? (2) : (3)); ++dx)
 				{
 					neighborhood[++n] = grid[(x + dx + WIDTH) % WIDTH][(y + dy + HEIGHT) % HEIGHT];
 				}
@@ -283,7 +283,7 @@ void TriangularGrid::getMooreNeighborhoodForDownTriangle(int neighborhood[13], i
 			//vertical cylinder
 			for (int dy = -1; dy < 2; ++dy)
 			{
-				for (int dx = ((dy > 0) ? (-1) : (-2)); dx < ((dy > 0) ? (1) : (2)); ++dx)
+				for (int dx = ((dy > 0) ? (-1) : (-2)); dx < ((dy > 0) ? (2) : (3)); ++dx)
 				{
 					neighborhood[++n] = (x + dx > -1 && x + dx < WIDTH) ? (grid[x + dx][(y + dy + HEIGHT) % HEIGHT]) : (0);
 				}
@@ -297,7 +297,7 @@ void TriangularGrid::getMooreNeighborhoodForDownTriangle(int neighborhood[13], i
 			//horizontal cylinder
 			for (int dy = -1; dy < 2; ++dy)
 			{
-				for (int dx = ((dy > 0) ? (-1) : (-2)); dx < ((dy > 0) ? (1) : (2)); ++dx)
+				for (int dx = ((dy > 0) ? (-1) : (-2)); dx < ((dy > 0) ? (2) : (3)); ++dx)
 				{
 					neighborhood[++n] = (y + dy > -1 && y + dy < HEIGHT) ? (grid[(x + dx + WIDTH) % WIDTH][y + dy]) : (0);
 				}
@@ -308,7 +308,7 @@ void TriangularGrid::getMooreNeighborhoodForDownTriangle(int neighborhood[13], i
 			//flat surface
 			for (int dy = -1; dy < 2; ++dy)
 			{
-				for (int dx = ((dy > 0) ? (-1) : (-2)); dx < ((dy > 0) ? (1) : (2)); ++dx)
+				for (int dx = ((dy > 0) ? (-1) : (-2)); dx < ((dy > 0) ? (2) : (3)); ++dx)
 				{
 					neighborhood[++n] = (x + dx > -1 && x + dx < WIDTH && y + dy > -1 && y + dy < HEIGHT) ? (grid[x + dx][y + dy]) : (0);
 				}

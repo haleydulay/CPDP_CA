@@ -13,3 +13,13 @@ void Grid::toggleGrid()
 {
 	shouldReadGridA = !shouldReadGridA;
 }
+
+unsigned int Grid::getCanvasWidth()
+{
+	return (WINDOW->getSize().x * 3) / 4;
+}
+
+unsigned int Grid::getCanvasHeight()
+{
+	return WINDOW->getSize().y;
+}

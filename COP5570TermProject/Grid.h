@@ -31,4 +31,7 @@ protected:
 	bool shouldReadGridA;	//decides which grid to read and which to write
 	int** gridA;			//1st 2D array of cell states
 	int** gridB;			//2nd 2D array of cell states
+
+	unsigned int getCanvasWidth();
+	unsigned int getCanvasHeight();
 };
